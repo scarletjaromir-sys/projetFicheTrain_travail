@@ -1629,6 +1629,29 @@
         return item._origKey || item.pk + "|" + item.type + "|" + item.nom;
       }
 
+      // ============================================================
+      // WAKE LOCK — empêche l'écran de se mettre en veille en cabine
+      // ============================================================
+      let wakeLock = null;
+      async function keepAwake() {
+        try {
+          if ("wakeLock" in navigator) {
+            wakeLock = await navigator.wakeLock.request("screen");
+            wakeLock.addEventListener("release", function () {
+              wakeLock = null;
+            });
+          }
+        } catch (e) {
+          console.warn("WakeLock indisponible", e);
+        }
+      }
+      // Réactive le verrou quand on revient sur l'app (iOS le relâche en arrière-plan)
+      document.addEventListener("visibilitychange", function () {
+        if (wakeLock === null && document.visibilityState === "visible") {
+          keepAwake();
+        }
+      });
+
       window.onload = function () {
         domContainer = document.getElementById("objectsContainer");
         domViewport = document.getElementById("trackViewport");
@@ -1640,6 +1663,7 @@
         domOverspeed = document.getElementById("overspeedOverlay");
 
         initGPS();
+        keepAwake();
         updateClock();
         setInterval(updateClock, 60000);
         // Double RAF: garantit que le DOM est mesuré après le premier paint sur iOS Safari
@@ -1737,6 +1761,12 @@
 
       window.deleteEditObj = function () {
         if (!editingItem) return;
+        if (
+          !confirm(
+            "Supprimer « " + (editingItem.nom || editingItem.type) + " » ?",
+          )
+        )
+          return;
         let idx = activeData.indexOf(editingItem);
         if (idx !== -1) {
           if (editingItem.el) editingItem.el.remove();
@@ -2806,6 +2836,10 @@
       }
 
       function onGpsSuccess(pos) {
+        // Ignore les positions trop imprécises (falaises, caténaire, tunnels partiels)
+        // qui font sauter la vitesse n'importe comment. 50 m = seuil raisonnable.
+        if (pos.coords.accuracy && pos.coords.accuracy > 50) return;
+
         let speed = pos.coords.speed;
         if (speed === null || speed < 0) speed = 0;
 
