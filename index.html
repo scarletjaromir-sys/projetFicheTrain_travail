@@ -2538,6 +2538,15 @@
 
         let filtered = raw.filter((item) => {
           if (!item) return false;
+          // PN, gares et tunnels concernent physiquement les deux voies :
+          // toujours visibles, quel que soit le sens de circulation.
+          if (
+            item.type === "PN" ||
+            item.type === "GARE" ||
+            item.type === "TUNNEL_DEB" ||
+            item.type === "TUNNEL_FIN"
+          )
+            return true;
           if (!item.track) return true;
           if (isContreSens) return item.track === "CS";
           else return item.track === "NORMAL";
@@ -3468,6 +3477,63 @@
       // DONNÉES : AMBERIEU → CHAMBERY (sens IMPAIR, PK croissant)
       // ============================================================
       let dataChamberyAmberieuImpair = [
+        // --- Signaux CONTRE-SENS (IPCS) Ambérieu → Chambéry ---
+        { pk: 56800, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 59000, type: "SIGNAL_CS", nom: "Nf (CS)", track: "CS" },
+        { pk: 62400, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 63900, type: "SIGNAL_CS", nom: "Nf 501 (CS)", track: "CS" },
+        { pk: 68400, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 69700, type: "SIGNAL_CS", nom: "Nf (CS)", track: "CS" },
+        { pk: 73100, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        {
+          pk: 75500,
+          type: "SIGNAL_CS",
+          nom: "Nf 601 TECS/TSCS (CS)",
+          track: "CS",
+        },
+        { pk: 81500, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 83200, type: "SIGNAL_CS", nom: "Nf (CS)", track: "CS" },
+        { pk: 86500, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        {
+          pk: 88700,
+          type: "SIGNAL_CS",
+          nom: "Nf 701 TECS/TSCS (CS)",
+          track: "CS",
+        },
+        { pk: 92800, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 94300, type: "SIGNAL_CS", nom: "Nf (CS)", track: "CS" },
+        { pk: 97000, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 99000, type: "SIGNAL_CS", nom: "Nf 101 TSCS (CS)", track: "CS" },
+        {
+          pk: 100100,
+          type: "SIGNAL_CS",
+          nom: "Nf 205/203/201 (CS)",
+          track: "CS",
+        },
+        {
+          pk: 101100,
+          type: "SIGNAL_CS",
+          nom: "Nf 301/307/305 (CS)",
+          track: "CS",
+        },
+        { pk: 105300, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 106400, type: "SIGNAL_CS", nom: "F (CS)", track: "CS" },
+        { pk: 108400, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        {
+          pk: 109200,
+          type: "SIGNAL_CS",
+          nom: "Nf 303 TSCS/TECS (CS)",
+          track: "CS",
+        },
+        { pk: 115000, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 116600, type: "SIGNAL_CS", nom: "Nf (CS)", track: "CS" },
+        { pk: 121200, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 122800, type: "SIGNAL_CS", nom: "Nf 405 TSCS (CS)", track: "CS" },
+        { pk: 123800, type: "SIGNAL_CS", nom: "Nf (CS)", track: "CS" },
+        { pk: 125000, type: "SIGNAL_CS", nom: "Nf TECS (CS)", track: "CS" },
+        { pk: 130800, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 131900, type: "SIGNAL_CS", nom: "Nf (CS)", track: "CS" },
+        { pk: 135500, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
         { pk: 51400, type: "GARE", nom: "AMBERIEU" },
         { pk: 51800, type: "SIGNAL", nom: "Nf", track: "NORMAL" },
         { pk: 52100, type: "SIGNAL", nom: "Nf", track: "NORMAL" },
