@@ -1,0 +1,4246 @@
+<!doctype html>
+
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Train" />
+    <meta name="theme-color" content="#25282c" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icon.svg" />
+    <title>Fiche Train v10</title>
+    <style>
+      :root {
+        --bg-deep: #25282c;
+        --panel-glass: rgba(255, 255, 255, 0.05);
+        --accent-blue: #00d2ff;
+        --accent-green: #00ff9d;
+        --accent-red: #ff4757;
+        --accent-orange: #ffa502;
+        --text-main: #ffffff;
+        --text-dim: #a4b0be;
+        --font-tech: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --font-mono: "Consolas", "Monaco", monospace;
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+      }
+
+      * {
+        box-sizing: border-box;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        -webkit-touch-callout: none !important;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      html {
+        background-color: #25282c;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #25282c !important;
+        color: #ffffff;
+        font-family: var(--font-tech);
+        overflow: hidden;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .app-container {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      .glass-panel {
+        background: var(--panel-glass);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.4);
+        border-left: 1px solid rgba(255, 255, 255, 0.4);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow:
+          inset 1px 1px 2px rgba(255, 255, 255, 0.3),
+          inset -5px -5px 15px rgba(0, 0, 0, 0.1),
+          10px 10px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      .top-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: calc(60px + env(safe-area-inset-top, 0px));
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding: 0 15px env(safe-area-inset-top, 0px) 15px;
+        padding-bottom: 8px;
+        padding-top: env(safe-area-inset-top, 0px);
+      }
+
+      .left-part,
+      .right-part {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .btn-icon,
+      .btn-add {
+        pointer-events: auto;
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.4);
+        border-left: 1px solid rgba(255, 255, 255, 0.4);
+        color: white;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        box-shadow:
+          5px 5px 15px rgba(0, 0, 0, 0.4),
+          inset 1px 1px 2px rgba(255, 255, 255, 0.2);
+        transition: transform 0.1s;
+        touch-action: manipulation;
+      }
+
+      .btn-icon:active,
+      .btn-add:active {
+        transform: scale(0.96);
+        box-shadow: inset 3px 3px 8px rgba(0, 0, 0, 0.4);
+      }
+
+      .btn-add {
+        background: var(--accent-orange);
+        color: #000;
+        box-shadow:
+          5px 5px 15px rgba(255, 165, 2, 0.3),
+          inset 2px 2px 5px rgba(255, 255, 255, 0.4);
+      }
+
+      .btn-edit-mode {
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.4);
+        border-left: 1px solid rgba(255, 255, 255, 0.4);
+        color: #a4b0be;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        touch-action: manipulation;
+        transition: all 0.2s;
+      }
+
+      .btn-edit-mode.active {
+        background: rgba(255, 165, 2, 0.3);
+        color: #ffa502;
+        border-color: #ffa502;
+        box-shadow: 0 0 10px rgba(255, 165, 2, 0.3);
+      }
+
+      .status-pill {
+        font-size: 12px;
+        font-weight: 800;
+        padding: 6px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .status-pill.ok {
+        color: #00ff9d;
+        border-color: #00ff9d;
+        background: rgba(0, 255, 157, 0.1);
+      }
+
+      .status-pill.waiting {
+        color: #ffa502;
+        border-color: #ffa502;
+      }
+
+      .status-pill.lost {
+        color: #ff4757;
+        border-color: #ff4757;
+      }
+
+      .clock {
+        font-family: var(--font-mono);
+        font-size: 20px;
+        font-weight: bold;
+        color: #a4b0be;
+      }
+
+      .track-viewport {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        background: radial-gradient(
+          circle at 50% 80%,
+          #353b45 0%,
+          #25282c 80%
+        ) !important;
+        background-color: #25282c !important;
+        cursor: grab;
+        z-index: 10;
+        touch-action: none;
+      }
+
+      .track-viewport:active {
+        cursor: grabbing;
+      }
+
+      .track-line {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 60px;
+        width: 3px;
+        background: rgba(255, 255, 255, 0.4);
+        z-index: 1;
+      }
+
+      .train-cursor {
+        position: absolute;
+        top: 75%;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        z-index: 999;
+        pointer-events: none;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          var(--accent-blue) 20%,
+          var(--accent-blue) 80%,
+          transparent 100%
+        );
+        box-shadow: 0 0 8px var(--accent-blue);
+        opacity: 0.9;
+      }
+
+      .pk-calib-container {
+        position: absolute;
+        right: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        pointer-events: auto;
+        z-index: 501;
+        top: 75%;
+        transform: translateY(-50%);
+      }
+
+      .btn-calib {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(5px);
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.5);
+        border-left: 1px solid rgba(255, 255, 255, 0.5);
+        color: white;
+        font-size: 30px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow:
+          8px 8px 20px rgba(0, 0, 0, 0.5),
+          inset 2px 2px 3px rgba(255, 255, 255, 0.3);
+        transition: transform 0.1s;
+        touch-action: manipulation;
+      }
+
+      .btn-calib:active {
+        background: var(–accent-blue);
+        color: black;
+        transform: scale(0.95);
+        box-shadow: inset 3px 3px 10px rgba(0, 0, 0, 0.4);
+      }
+
+      .train-pk-label {
+        font-family: var(–font-mono);
+        font-size: 28px;
+        font-weight: 900;
+        color: #00d2ff;
+        text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+        background: rgba(0, 0, 0, 0.6);
+        padding: 8px 15px;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 210, 255, 0.3);
+        box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
+      }
+
+      #objectsContainer {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+      }
+
+      .track-obj {
+        position: absolute;
+        left: 100px;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: transform 0.1s;
+        z-index: 20;
+        isolation: isolate;
+      }
+
+      .track-connector {
+        position: absolute;
+        left: -40px;
+        width: 36px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.5);
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+      }
+
+      .obj-card {
+        background: rgba(45, 50, 60, 0.95);
+        padding: 8px 14px;
+        border-radius: 4px;
+        border-left: 5px solid #555;
+        min-width: 200px;
+        box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.4);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .obj-name {
+        font-weight: 700;
+        font-size: 17px;
+        color: #eee;
+      }
+
+      .obj-pk {
+        font-family: var(–font-mono);
+        font-size: 13px;
+        color: #a4b0be;
+        margin-top: 2px;
+      }
+
+      .type-GARE .obj-card {
+        border-color: #b2bec3;
+        background: rgba(45, 50, 58, 0.97);
+        border-left-width: 6px;
+      }
+
+      .type-GARE .obj-name {
+        color: #dfe6e9;
+        font-size: 18px;
+        letter-spacing: 1px;
+      }
+
+      .type-VITESSE .obj-card {
+        border-color: #ff4757;
+        background: rgba(60, 10, 10, 0.97);
+        border-left-width: 6px;
+      }
+
+      .type-VITESSE .obj-name {
+        color: #ff4757;
+        font-size: 22px;
+        font-weight: 900;
+      }
+
+      .type-SIGNAL .obj-card {
+        border-color: #2ed573;
+        background: rgba(10, 40, 20, 0.97);
+        border-left-width: 6px;
+      }
+
+      .type-SIGNAL .obj-name {
+        color: #2ed573;
+      }
+
+      .type-SIGNAL_CS .obj-card {
+        border-color: #e056fd;
+        background: rgba(40, 10, 50, 0.97);
+        border-left-width: 6px;
+      }
+
+      .type-SIGNAL_CS .obj-name {
+        color: #e056fd;
+      }
+
+      .type-PN .obj-card {
+        border-color: #00d2ff;
+        background: rgba(0, 30, 50, 0.97);
+        border-left-width: 6px;
+      }
+
+      .type-PN .obj-name {
+        color: #00d2ff;
+      }
+
+      .type-TUNNEL .obj-card,
+      .type-TUNNEL_DEB .obj-card,
+      .type-TUNNEL_FIN .obj-card {
+        border-color: #8b6347;
+        background: rgba(30, 18, 8, 0.97);
+        border-left-width: 6px;
+      }
+
+      .type-TUNNEL .obj-name,
+      .type-TUNNEL_DEB .obj-name,
+      .type-TUNNEL_FIN .obj-name {
+        color: #c49a6c;
+      }
+
+      .type-TUNNEL_FIN .obj-card {
+        border-left-style: dashed;
+        opacity: 0.7;
+      }
+
+      .type-INFO .obj-card {
+        border-color: #ffd32a;
+        background: rgba(50, 40, 0, 0.97);
+        border-left-width: 6px;
+      }
+
+      .type-INFO .obj-name {
+        color: #ffd32a;
+      }
+
+      .type-ORDRE .obj-card {
+        border-color: #f1c40f;
+        background: rgba(60, 50, 10, 0.95);
+        border-left-width: 6px;
+      }
+
+      .type-ORDRE_FIN .obj-card {
+        border-color: #aaa;
+        border-left-style: dashed;
+        background: rgba(40, 40, 40, 0.9);
+      }
+
+      .ltv-zone {
+        position: absolute;
+        left: 54px;
+        width: 10px;
+        background: repeating-linear-gradient(
+          180deg,
+          #f1c40f 0px,
+          #f1c40f 8px,
+          #000 8px,
+          #000 16px
+        );
+        z-index: 15;
+      }
+
+      .speed-zone {
+        position: absolute;
+        left: 54px;
+        width: 10px;
+        background: repeating-linear-gradient(
+          180deg,
+          #ff4757 0px,
+          #ff4757 8px,
+          #000 8px,
+          #000 16px
+        );
+        z-index: 15;
+      }
+
+      .tunnel-zone {
+        position: absolute;
+        left: 54px;
+        width: 10px;
+        background: repeating-linear-gradient(
+          180deg,
+          #8b6347 0px,
+          #8b6347 8px,
+          #1a0d05 8px,
+          #1a0d05 16px
+        );
+        z-index: 15;
+      }
+
+      .track-obj.active {
+        transform: translateY(-50%) scale(1.05);
+        z-index: 50;
+        filter: brightness(1.3);
+      }
+
+      .info-floater {
+        position: absolute;
+        top: calc(70px + env(safe-area-inset-top, 0px));
+        right: 20px;
+        z-index: 1000;
+        padding: 15px;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 220px;
+        text-align: center;
+      }
+
+      .info-sep {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        width: 80%;
+        margin: 0 auto;
+      }
+
+      .info-label {
+        font-size: 11px;
+        color: #00d2ff;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 4px;
+      }
+
+      .info-val {
+        font-weight: 900;
+        font-size: 18px;
+        color: #ffffff;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      }
+
+      .info-val.station {
+        color: #00ff9d;
+        font-size: 22px;
+      }
+
+      .info-val.event {
+        color: #ffffff;
+        font-size: 18px;
+      }
+
+      .info-row .big-pk {
+        color: #00d2ff;
+      }
+
+      .info-row .dist-badge {
+        color: #ffa502;
+      }
+
+      .small-pk {
+        font-family: var(–font-mono);
+        font-size: 12px;
+        color: #a4b0be;
+      }
+
+      .big-pk {
+        font-family: var(–font-mono);
+        font-size: 22px;
+        font-weight: 900;
+        color: #00d2ff;
+        display: block;
+        margin-top: 4px;
+      }
+
+      .dist-badge {
+        font-size: 14px;
+        color: #ffa502;
+        margin-left: 8px;
+        font-weight: normal;
+        vertical-align: middle;
+      }
+
+      .bottom-hud {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        height: 100px;
+        border-radius: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 15px;
+        z-index: 1000;
+      }
+
+      .hud-left-group,
+      .hud-right-group {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .hud-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 90px;
+      }
+
+      .hud-label {
+        font-size: 11px;
+        color: #a4b0be;
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+      }
+
+      .hud-value {
+        font-size: 45px;
+        font-weight: 800;
+        font-family: var(–font-mono);
+        line-height: 1;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+      }
+
+      .limit {
+        color: #ff4757;
+      }
+
+      .hud-sep {
+        width: 1px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .btn-alert {
+        pointer-events: auto;
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        border: none;
+        background: linear-gradient(135deg, #ff4757, #c0392b);
+        font-size: 30px;
+        cursor: pointer;
+        box-shadow:
+          5px 5px 15px rgba(0, 0, 0, 0.4),
+          inset 2px 2px 5px rgba(255, 255, 255, 0.3);
+        transition: transform 0.1s;
+        touch-action: manipulation;
+      }
+
+      .btn-alert:active {
+        transform: scale(0.95);
+        box-shadow: inset 3px 3px 10px rgba(0, 0, 0, 0.5);
+      }
+
+      .minimized-alert {
+        position: absolute;
+        top: 70px;
+        left: 20px;
+        z-index: 2000;
+        background: #ff4757;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 0 15px red;
+        animation: blink 1s infinite;
+        font-size: 16px;
+        pointer-events: auto;
+      }
+
+      .overlay-alert {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(50, 0, 0, 0.9);
+        z-index: 3000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .alert-box {
+        background: #2c0505;
+        padding: 30px;
+        border: 2px solid #ff4757;
+        border-radius: 20px;
+        text-align: center;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      }
+
+      .alert-box h2 {
+        color: #ff4757;
+        margin-bottom: 10px;
+        font-size: 24px;
+      }
+
+      .incident-pk {
+        font-size: 36px;
+        font-weight: 900;
+        font-family: var(–font-mono);
+        color: white;
+        margin-bottom: 20px;
+        display: block;
+      }
+
+      .alert-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      }
+
+      .btn-reduce,
+      .btn-kill {
+        flex: 1;
+        padding: 15px;
+        border-radius: 8px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 14px;
+        box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .btn-reduce {
+        background: #34495e;
+        color: white;
+        border-top: 1px solid #666;
+      }
+
+      .btn-kill {
+        background: #ff4757;
+        color: white;
+        border-top: 1px solid #ff8790;
+      }
+
+      .settings-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 2000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .settings-box {
+        width: 90%;
+        max-width: 350px;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      }
+
+      .setting-row {
+        margin-bottom: 20px;
+      }
+
+      select,
+      input[type="number"],
+      input[type="text"] {
+        width: 100%;
+        padding: 12px;
+        background: rgba(10, 12, 16, 0.8);
+        border: 1px solid #444;
+        border-top: 1px solid #666;
+        color: white;
+        border-radius: 6px;
+        font-size: 16px;
+        box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5);
+      }
+
+      .btn-close {
+        width: 100%;
+        padding: 14px;
+        background: var(–accent-blue);
+        border: none;
+        color: black;
+        font-weight: bold;
+        border-radius: 8px;
+        margin-top: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        box-shadow:
+          3px 3px 15px rgba(0, 210, 255, 0.3),
+          inset 2px 2px 5px rgba(255, 255, 255, 0.3);
+        touch-action: manipulation;
+      }
+
+      .btn-close:active {
+        transform: scale(0.98);
+      }
+
+      .orders-list-container {
+        margin: 15px 0;
+        max-height: 150px;
+        overflow-y: auto;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 10px;
+        border-radius: 6px;
+      }
+
+      .order-item {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #333;
+        padding: 10px 0;
+        font-size: 14px;
+        color: #f1c40f;
+        align-items: center;
+      }
+
+      .order-del {
+        color: #ff4757;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 0 10px;
+      }
+
+      .btn-text {
+        background: none;
+        border: none;
+        color: #a4b0be;
+        text-decoration: underline;
+        margin-top: 10px;
+        width: 100%;
+        cursor: pointer;
+        font-size: 14px;
+        touch-action: manipulation;
+      }
+
+      @keyframes blink {
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .overspeed-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+        pointer-events: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(255, 0, 0, 0.3);
+        animation: blinkRed 0.5s infinite alternate;
+      }
+
+      .overspeed-msg {
+        font-size: 32px;
+        font-weight: 900;
+        color: white;
+        background: #c0392b;
+        padding: 15px 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px red;
+        border: 2px solid white;
+      }
+
+      @keyframes blinkRed {
+        from {
+          opacity: 0.3;
+        }
+
+        to {
+          opacity: 0.7;
+        }
+      }
+
+      .btn-stop {
+        pointer-events: auto;
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        border: none;
+        background: #444;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow:
+          5px 5px 15px rgba(0, 0, 0, 0.4),
+          inset 2px 2px 5px rgba(255, 255, 255, 0.2);
+        transition: all 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        touch-action: manipulation;
+      }
+
+      .btn-stop.active {
+        background: #ff0000;
+        box-shadow: 0 0 15px #ff0000;
+        animation: blink 0.5s infinite alternate;
+      }
+
+      body.edit-mode #objectsContainer {
+        pointer-events: auto;
+      }
+
+      body.edit-mode .track-obj {
+        pointer-events: auto;
+        cursor: pointer;
+      }
+
+      body.edit-mode .track-obj .obj-card {
+        border-style: dashed;
+        opacity: 0.9;
+      }
+
+      body.edit-mode .track-obj:hover .obj-card {
+        filter: brightness(1.4);
+        border-style: solid;
+      }
+
+      .edit-mode-banner {
+        position: absolute;
+        top: calc(65px + env(safe-area-inset-top, 0px));
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1500;
+        background: rgba(255, 165, 2, 0.9);
+        color: black;
+        padding: 6px 18px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        pointer-events: none;
+        white-space: nowrap;
+      }
+
+      .btn-add-bloc {
+        width: 100%;
+        padding: 14px;
+        background: rgba(0, 210, 255, 0.15);
+        border: 1px dashed var(–accent-blue);
+        color: #00d2ff;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 15px;
+        touch-action: manipulation;
+        margin-bottom: 10px;
+      }
+
+      .type-select-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .type-btn {
+        padding: 10px;
+        border-radius: 8px;
+        border: 2px solid #444;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        font-size: 13px;
+        font-weight: bold;
+        cursor: pointer;
+        touch-action: manipulation;
+        text-align: center;
+      }
+
+      .type-btn.selected {
+        border-color: #ffa502;
+        background: rgba(255, 165, 2, 0.2);
+        color: #ffa502;
+      }
+
+      .btn-edit-delete {
+        flex: 1;
+        padding: 14px;
+        background: rgba(255, 71, 87, 0.2);
+        border: 1px solid var(–accent-red);
+        color: #ff4757;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 15px;
+        touch-action: manipulation;
+      }
+
+      .modal-edit-obj {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 4000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .edit-obj-box {
+        background: #1e2128;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 24px;
+        width: 90%;
+        max-width: 380px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      }
+
+      .edit-obj-box h3 {
+        color: #ffa502;
+        margin: 0 0 20px 0;
+        font-size: 16px;
+        letter-spacing: 1px;
+        text-align: center;
+      }
+
+      .edit-field {
+        margin-bottom: 16px;
+      }
+
+      .edit-field label {
+        display: block;
+        font-size: 11px;
+        color: #a4b0be;
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+      }
+
+      .edit-field input {
+        width: 100%;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid #444;
+        color: white;
+        border-radius: 8px;
+        font-size: 16px;
+        font-family: var(–font-mono);
+      }
+
+      .edit-obj-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .btn-edit-save {
+        flex: 2;
+        padding: 14px;
+        background: var(–accent-blue);
+        border: none;
+        color: black;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 15px;
+        touch-action: manipulation;
+      }
+
+      .btn-edit-cancel {
+        flex: 1;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid #555;
+        color: white;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 15px;
+        touch-action: manipulation;
+      }
+
+      .tunnel-partner-info {
+        background: rgba(139, 99, 71, 0.15);
+        border: 1px solid #8b6347;
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 14px;
+      }
+
+      .tunnel-partner-label {
+        color: #c49a6c;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+
+      .tunnel-sync-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #a4b0be;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .tunnel-sync-row input[type="“checkbox”"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+
+      .speed-with-adj {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .btn-gps-adj {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 165, 2, 0.2);
+        border: 2px solid #ffa502;
+        color: #ffa502;
+        font-size: 18px;
+        font-weight: 900;
+        cursor: pointer;
+        touch-action: manipulation;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        line-height: 1;
+        padding: 0;
+      }
+
+      .btn-gps-adj:active {
+        background: rgba(255, 165, 2, 0.5);
+        transform: scale(0.92);
+      }
+
+      .speed-group.gps-lost-mode .hud-value.speed {
+        color: #ffa502;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app-container">
+      <div id="overspeedOverlay" class="overspeed-overlay hidden">
+        <div class="overspeed-msg">⚠️ VITESSE EXCESSIVE</div>
+      </div>
+
+      ```
+      <div
+        id="minimizedAlert"
+        class="minimized-alert hidden"
+        onclick="window.restoreIncident()"
+      >
+        ⚠️ PK <span id="minimizedPkVal">...</span>
+      </div>
+
+      <div class="glass-panel top-bar">
+        <div class="left-part">
+          <div id="gpsStatus" class="status-pill waiting">📡 GPS...</div>
+          <button class="btn-icon" onclick="window.openModal('config')">
+            ⚙️ MENU
+          </button>
+        </div>
+        <div class="center-part">
+          <span id="clockDisplay" class="clock">--:--</span>
+        </div>
+        <div class="right-part">
+          <button
+            class="btn-edit-mode"
+            id="btnEditMode"
+            onclick="window.toggleEditMode()"
+          >
+            ✏️ ÉDITER
+          </button>
+          <button class="btn-icon" onclick="window.askPk()">📍 PK</button>
+          <button class="btn-add" onclick="window.openModal('ordre')">
+            ➕ LTV
+          </button>
+        </div>
+      </div>
+
+      <div id="editModeBanner" class="edit-mode-banner hidden">
+        ✏️ Appui long = modifier &nbsp;|&nbsp;
+        <span
+          onclick="window.openAddBloc()"
+          style="
+            text-decoration: underline;
+            cursor: pointer;
+            pointer-events: auto;
+          "
+          >➕ Nouveau bloc</span
+        >
+      </div>
+
+      <div class="track-viewport" id="trackViewport">
+        <div class="track-line"></div>
+        <div id="trainCursor" class="train-cursor"></div>
+        <div class="pk-calib-container">
+          <button class="btn-calib" onclick="window.adjustPk(-10)">-</button>
+          <div class="train-pk-label" id="currentPkDisplay">PK ---</div>
+          <button class="btn-calib" onclick="window.adjustPk(10)">+</button>
+        </div>
+        <div id="objectsContainer"></div>
+      </div>
+
+      <div id="infoPanel" class="glass-panel info-floater">
+        <div class="info-row">
+          <span class="info-label">PROCHAINE GARE</span>
+          <span id="nextStationText" class="info-val station">---</span>
+          <span id="nextStationPk" class="small-pk"></span>
+        </div>
+        <div class="info-sep"></div>
+        <div class="info-row">
+          <span class="info-label">À VENIR</span>
+          <span id="nextEventText" class="info-val event">---</span>
+          <span id="nextEventPk" class="big-pk"></span>
+        </div>
+      </div>
+
+      <div class="glass-panel bottom-hud">
+        <div class="hud-left-group">
+          <div class="hud-group limit-group">
+            <span class="hud-label">LIMITE</span>
+            <span class="hud-value limit" id="limitDisplay">---</span>
+          </div>
+        </div>
+        <div class="hud-sep"></div>
+        <div class="hud-right-group">
+          <button id="btnStop" class="btn-stop" onclick="window.toggleStop()">
+            STOP
+          </button>
+          <div class="hud-group speed-group">
+            <span class="hud-label">VITESSE</span>
+            <div class="speed-with-adj">
+              <button
+                class="btn-gps-adj hidden"
+                id="btnGpsAdjMinus"
+                onclick="window.gpsAdjSpeed(-5)"
+                style="display: none"
+              >
+                −
+              </button>
+              <span class="hud-value speed" id="speedDisplay">---</span>
+              <button
+                class="btn-gps-adj hidden"
+                id="btnGpsAdjPlus"
+                onclick="window.gpsAdjSpeed(+5)"
+                style="display: none"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          <button class="btn-alert" onclick="window.signalIncident()">
+            ⚠️
+          </button>
+        </div>
+      </div>
+
+      <div id="incidentAlert" class="overlay-alert hidden">
+        <div class="alert-box">
+          <h2>⚠️ INCIDENT</h2>
+          <p class="incident-pk">PK <span id="incidentPkVal">...</span></p>
+          <div class="alert-actions">
+            <button class="btn-reduce" onclick="window.minimizeIncident()">
+              RÉDUIRE (MÉMO)
+            </button>
+            <button class="btn-kill" onclick="window.closeIncident()">
+              CLÔTURER
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="modalConfig" class="settings-overlay hidden">
+        <div class="glass-panel settings-box">
+          <h3>CONFIGURATION</h3>
+          <div class="setting-row">
+            <label>CHOIX DE LA LIGNE</label>
+            <select id="lineSelect" onchange="window.changeLine()">
+              <option value="CHAMBERY_MODANE">Chambéry ➔ Modane</option>
+              <option value="MODANE_CHAMBERY">Modane ➔ Chambéry</option>
+              <option value="CHAMBERY_AMBERIEU">Chambéry ➔ Ambérieu</option>
+              <option value="AMBERIEU_CHAMBERY">Ambérieu ➔ Chambéry</option>
+              <option value="SPA_ALV">St-Pierre → Albertville</option>
+              <option value="ALV_PBM">Albertville → Pomblière</option>
+              <option value="PBM_ALV">Pomblière → Albertville</option>
+              <option value="ALV_SPA">Albertville → St-Pierre</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <label>TRAIN</label>
+            <select id="trainSelect" onchange="window.updateSettings()">
+              <option value="MA100">MA 100</option>
+              <option value="ME100">ME 100 / HLP</option>
+              <option value="MA90">MA 90</option>
+              <option value="MA80">MA 80</option>
+            </select>
+          </div>
+          <div class="setting-row warning-row">
+            <label>CONTRE-SENS (IPCS)</label>
+            <input
+              type="checkbox"
+              id="csToggle"
+              onchange="window.toggleContreSens()"
+            />
+          </div>
+          <button class="btn-close" onclick="window.closeModal('config')">
+            VALIDER
+          </button>
+          <button
+            class="btn-text"
+            onclick="window.exportHTML()"
+            style="margin-top: 8px; color: #ffa502; font-weight: bold"
+          >
+            📥 EXPORTER index.html (avec corrections)
+          </button>
+          <button
+            class="btn-text"
+            onclick="window.backupLS()"
+            style="margin-top: 4px; color: #2ed573"
+          >
+            💾 SAUVEGARDER corrections (JSON)
+          </button>
+          <label
+            style="
+              display: block;
+              margin-top: 4px;
+              color: #2ed573;
+              font-size: 13px;
+              cursor: pointer;
+              text-decoration: underline;
+            "
+            for="importLS"
+            >📂 RESTAURER corrections (JSON)</label
+          >
+          <input
+            type="file"
+            id="importLS"
+            accept=".json"
+            style="display: none"
+            onchange="window.restoreLS(this)"
+          />
+        </div>
+      </div>
+
+      <div id="modalOrder" class="settings-overlay hidden">
+        <div class="glass-panel settings-box">
+          <h3>GESTION LTV</h3>
+          <div class="input-group">
+            <input
+              type="number"
+              id="orderPkStart"
+              placeholder="Début PK"
+              step="0.1"
+            />
+            <input
+              type="number"
+              id="orderPkEnd"
+              placeholder="Fin PK"
+              step="0.1"
+            />
+            <input
+              type="number"
+              id="orderSpeed"
+              placeholder="Vitesse"
+              style="width: 80px"
+            />
+          </div>
+          <button class="btn-close" onclick="window.addOrder()">AJOUTER</button>
+          <div class="orders-list-container">
+            <label>LTV EN COURS :</label>
+            <div id="ordersList" class="orders-list"></div>
+          </div>
+          <button class="btn-text" onclick="window.closeModal('order')">
+            Fermer
+          </button>
+        </div>
+      </div>
+
+      <div id="modalPk" class="settings-overlay hidden">
+        <div class="glass-panel settings-box" style="text-align: center">
+          <h3 style="color: #00d2ff; margin-bottom: 15px">ALLER AU PK</h3>
+          <div class="input-group" style="margin-bottom: 20px">
+            <input
+              type="number"
+              id="inputPkVal"
+              placeholder="Ex: 145.5"
+              step="0.1"
+              style="
+                font-size: 24px;
+                text-align: center;
+                font-weight: bold;
+                color: #00d2ff;
+              "
+            />
+          </div>
+          <div class="alert-actions">
+            <button class="btn-reduce" onclick="window.closeModal('pk')">
+              ANNULER
+            </button>
+            <button
+              class="btn-kill"
+              style="background: var(--accent-blue); border-top: 1px solid #fff"
+              onclick="window.submitPk()"
+            >
+              VALIDER
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="modalEditObj" class="modal-edit-obj hidden">
+        <div class="edit-obj-box">
+          <h3>✏️ MODIFIER LE BLOC</h3>
+          <div class="edit-field">
+            <label>Nom / Libellé</label>
+            <input type="text" id="editObjNom" placeholder="Ex: Nf 137.3" />
+          </div>
+          <div class="edit-field">
+            <label>PK (en km, ex: 137.300)</label>
+            <input
+              type="number"
+              id="editObjPk"
+              placeholder="137.300"
+              step="0.001"
+            />
+          </div>
+          <!-- Info partenaire tunnel (affiché seulement pour TUNNEL_DEB/FIN) -->
+          <div id="tunnelPartnerInfo" class="tunnel-partner-info hidden">
+            <div class="tunnel-partner-label" id="tunnelPartnerLabel">
+              🔗 Partenaire : <span id="tunnelPartnerName">—</span> @ PK
+              <span id="tunnelPartnerPk">—</span>
+            </div>
+            <label class="tunnel-sync-row">
+              <input type="checkbox" id="tunnelSyncNames" checked />
+              <span>Renommer aussi le partenaire (même nom)</span>
+            </label>
+          </div>
+          <div class="edit-obj-actions">
+            <button class="btn-edit-delete" onclick="window.deleteEditObj()">
+              🗑 SUPPR
+            </button>
+            <button class="btn-edit-cancel" onclick="window.closeEditObj()">
+              ANNULER
+            </button>
+            <button class="btn-edit-save" onclick="window.saveEditObj()">
+              ✓ OK
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="modalAddBloc" class="modal-edit-obj hidden">
+        <div class="edit-obj-box">
+          <h3>➕ NOUVEAU BLOC</h3>
+          <div class="edit-field">
+            <label>Type de bloc</label>
+            <div class="type-select-grid" id="typeSelectGrid">
+              <div
+                class="type-btn selected"
+                data-type="SIGNAL"
+                onclick="window.selectType(this)"
+              >
+                🟡 SIGNAL
+              </div>
+              <div
+                class="type-btn"
+                data-type="GARE"
+                onclick="window.selectType(this)"
+              >
+                🏠 GARE
+              </div>
+              <div
+                class="type-btn"
+                data-type="TUNNEL_DEB"
+                onclick="window.selectType(this)"
+              >
+                ⬛ TUNNEL début
+              </div>
+              <div
+                class="type-btn"
+                data-type="TUNNEL_FIN"
+                onclick="window.selectType(this)"
+              >
+                ⬜ TUNNEL fin
+              </div>
+              <div
+                class="type-btn"
+                data-type="VITESSE"
+                onclick="window.selectType(this)"
+              >
+                ⚡ VITESSE
+              </div>
+              <div
+                class="type-btn"
+                data-type="PN"
+                onclick="window.selectType(this)"
+              >
+                🚧 PN
+              </div>
+              <div
+                class="type-btn"
+                data-type="INFO"
+                onclick="window.selectType(this)"
+              >
+                ℹ️ INFO
+              </div>
+            </div>
+          </div>
+          <div class="edit-field">
+            <label>Nom / Libellé</label>
+            <input type="text" id="addBlocNom" placeholder="Ex: Nf 142.5" />
+          </div>
+          <div class="edit-field">
+            <label>PK (en km) — laissez vide = PK actuel</label>
+            <input
+              type="number"
+              id="addBlocPk"
+              placeholder="142.500"
+              step="0.001"
+            />
+          </div>
+          <div class="edit-obj-actions">
+            <button class="btn-edit-cancel" onclick="window.closeAddBloc()">
+              ANNULER
+            </button>
+            <button class="btn-edit-save" onclick="window.saveAddBloc()">
+              ✓ CRÉER
+            </button>
+          </div>
+        </div>
+      </div>
+      ```
+    </div>
+
+    <script>
+      // ============================================================
+      // MOTEUR & UI
+      // ============================================================
+      const SCALE = 0.5;
+      let currentPk = 137600;
+      let direction = "IMPAIR";
+      let currentLine = "CHAMBERY_MODANE";
+      let isGpsActive = true;
+      let isPaused = false;
+      let lastFrameTime = 0;
+      let currentSpeedMs = 0;
+      let lastKnownSpeedMs = 0; // dernière vitesse GPS valide
+      let gpsLostTimer = null; // timeout avant passage en mode GPS perdu
+      let isGpsLost = false; // true = GPS perdu, on roule à lastKnownSpeedMs
+      let manualSpeedMs = null; // vitesse manuelle en mode GPS perdu (null = utilise lastKnownSpeedMs)
+      let lastTouchY = 0;
+      let activeData = [];
+      let customOrders = [];
+      let currentTrainType = "MA100";
+      let isContreSens = false;
+      let isEditMode = false;
+      let editingItem = null;
+      let incidentPk = null; // PK capturé au moment du signalement d'incident
+
+      let domContainer,
+        domViewport,
+        domLimit,
+        domStationName,
+        domStationPk,
+        domEventName,
+        domEventPk,
+        domOverspeed;
+
+      // ============================================================
+      // PERSISTANCE localStorage — blocs ajoutés/supprimés/modifiés par ligne
+      // Structure: { added: [...], deleted: [...], modified: [...] }
+      // - added   : blocs créés via l'éditeur (_custom:true)
+      // - deleted : blocs natifs supprimés (identifiés par _origKey)
+      // - modified: blocs natifs modifiés (pk ou nom changé)
+      // LTV non sauvegardées (temporaires par nature)
+      // ============================================================
+      function lsKey(line) {
+        return "fiche_train_edits_" + line;
+      }
+
+      function saveEditsToLS() {
+        // On ne sauvegarde QUE les blocs réellement créés par l'utilisateur (_userAdded),
+        // jamais les blocs natifs même s'ils ont _custom:true dans les données.
+        // C'est ça qui évite la multiplication des blocs à chaque rechargement.
+        let added = activeData
+          .filter((i) => i._userAdded === true)
+          .map((i) => ({ pk: i.pk, type: i.type, nom: i.nom }));
+        let deleted = deletedBlocs[currentLine] || [];
+        let modified = modifiedBlocs[currentLine] || [];
+        let store = { added, deleted, modified };
+        try {
+          localStorage.setItem(lsKey(currentLine), JSON.stringify(store));
+        } catch (e) {
+          console.warn("LS save error", e);
+        }
+      }
+
+      function loadEditsFromLS(line) {
+        try {
+          let raw = localStorage.getItem(lsKey(line));
+          if (!raw) return { added: [], deleted: [], modified: [] };
+          let parsed = JSON.parse(raw);
+          parsed.modified = parsed.modified || [];
+          return parsed;
+        } catch (e) {
+          return { added: [], deleted: [], modified: [] };
+        }
+      }
+
+      // Registre des suppressions et modifications par ligne
+      let deletedBlocs = {};
+      let modifiedBlocs = {};
+
+      // Clé unique d'identification d'un bloc natif (avant toute modif)
+      function origKey(item) {
+        return item._origKey || item.pk + "|" + item.type + "|" + item.nom;
+      }
+
+      window.onload = function () {
+        domContainer = document.getElementById("objectsContainer");
+        domViewport = document.getElementById("trackViewport");
+        domLimit = document.getElementById("limitDisplay");
+        domStationName = document.getElementById("nextStationText");
+        domStationPk = document.getElementById("nextStationPk");
+        domEventName = document.getElementById("nextEventText");
+        domEventPk = document.getElementById("nextEventPk");
+        domOverspeed = document.getElementById("overspeedOverlay");
+
+        initGPS();
+        updateClock();
+        setInterval(updateClock, 60000);
+        // Double RAF: garantit que le DOM est mesuré après le premier paint sur iOS Safari
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            initView();
+            lastFrameTime = performance.now();
+            requestAnimationFrame(gameLoop);
+          });
+        });
+
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.getRegistrations().then((regs) => {
+            regs.forEach((r) => r.unregister());
+          });
+          caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
+        }
+        document.addEventListener("contextmenu", (e) => e.preventDefault());
+        document.addEventListener("selectstart", (e) => e.preventDefault());
+        document.addEventListener("dragstart", (e) => e.preventDefault());
+      };
+
+      // ============================================================
+      // MODE ÉDITION
+      // ============================================================
+      window.toggleEditMode = function () {
+        isEditMode = !isEditMode;
+        document.body.classList.toggle("edit-mode", isEditMode);
+        document
+          .getElementById("btnEditMode")
+          .classList.toggle("active", isEditMode);
+        document
+          .getElementById("editModeBanner")
+          .classList.toggle("hidden", !isEditMode);
+      };
+
+      window.openEditObj = function (item) {
+        editingItem = item;
+        document.getElementById("editObjNom").value = item.nom || "";
+        document.getElementById("editObjPk").value = (item.pk / 1000).toFixed(
+          3,
+        );
+
+        // Afficher le partenaire si c'est un tunnel
+        var partnerInfoEl = document.getElementById("tunnelPartnerInfo");
+        if (item.type === "TUNNEL_DEB" || item.type === "TUNNEL_FIN") {
+          // Chercher le partenaire par nom identique et type opposé
+          var oppositeType =
+            item.type === "TUNNEL_DEB" ? "TUNNEL_FIN" : "TUNNEL_DEB";
+          var partners = activeData.filter(function (i) {
+            return i && i.type === oppositeType && i.nom === item.nom;
+          });
+          var partner =
+            partners.length > 0
+              ? partners.reduce(function (a, b) {
+                  return Math.abs(a.pk - item.pk) < Math.abs(b.pk - item.pk)
+                    ? a
+                    : b;
+                })
+              : null;
+          if (partner) {
+            var roleLabel = item.type === "TUNNEL_DEB" ? "⬛ Début" : "⬜ Fin";
+            var partnerRole = item.type === "TUNNEL_DEB" ? "⬜ FIN" : "⬛ DEB";
+            document.getElementById("tunnelPartnerLabel").innerHTML =
+              roleLabel +
+              " lié à <b>" +
+              partnerRole +
+              "</b> &ldquo;" +
+              partner.nom +
+              "&rdquo; @ PK " +
+              (partner.pk / 1000).toFixed(3);
+            partnerInfoEl.classList.remove("hidden");
+            partnerInfoEl._partner = partner;
+          } else {
+            document.getElementById("tunnelPartnerLabel").innerHTML =
+              "⚠️ Aucun partenaire trouvé avec ce nom";
+            partnerInfoEl.classList.remove("hidden");
+            partnerInfoEl._partner = null;
+          }
+        } else {
+          partnerInfoEl.classList.add("hidden");
+          partnerInfoEl._partner = null;
+        }
+
+        document.getElementById("modalEditObj").classList.remove("hidden");
+        setTimeout(function () {
+          document.getElementById("editObjNom").focus();
+        }, 100);
+      };
+
+      window.closeEditObj = function () {
+        document.getElementById("modalEditObj").classList.add("hidden");
+        editingItem = null;
+      };
+
+      window.deleteEditObj = function () {
+        if (!editingItem) return;
+        let idx = activeData.indexOf(editingItem);
+        if (idx !== -1) {
+          if (editingItem.el) editingItem.el.remove();
+          // Supprimer la zone hachurée liée si c'est un tunnel
+          if (editingItem.elZone) editingItem.elZone.remove();
+          if (editingItem.elZoneDeb && editingItem.elZoneDeb.elZone) {
+            editingItem.elZoneDeb.elZone.remove();
+            editingItem.elZoneDeb.elZone = null;
+          }
+          if (!editingItem._userAdded) {
+            if (!deletedBlocs[currentLine]) deletedBlocs[currentLine] = [];
+            deletedBlocs[currentLine].push(origKey(editingItem));
+            if (modifiedBlocs[currentLine]) {
+              modifiedBlocs[currentLine] = modifiedBlocs[currentLine].filter(
+                (m) => m.origKey !== origKey(editingItem),
+              );
+            }
+          }
+          activeData.splice(idx, 1);
+        }
+        saveEditsToLS();
+        window.closeEditObj();
+        // Si suppression d'un tunnel, recalculer toutes les liaisons
+        if (
+          editingItem &&
+          (editingItem.type === "TUNNEL_DEB" ||
+            editingItem.type === "TUNNEL_FIN")
+        ) {
+          initView();
+        } else {
+          updateVisuals();
+        }
+      };
+
+      let selectedNewType = "SIGNAL";
+
+      window.openAddBloc = function () {
+        document.getElementById("addBlocNom").value = "";
+        document.getElementById("addBlocPk").value = "";
+        selectedNewType = "SIGNAL";
+        document
+          .querySelectorAll(".type-btn")
+          .forEach((b) => b.classList.remove("selected"));
+        document
+          .querySelector('[data-type="SIGNAL"]')
+          .classList.add("selected");
+        document.getElementById("modalAddBloc").classList.remove("hidden");
+        setTimeout(() => document.getElementById("addBlocNom").focus(), 100);
+      };
+
+      window.closeAddBloc = function () {
+        document.getElementById("modalAddBloc").classList.add("hidden");
+      };
+
+      window.selectType = function (btn) {
+        document
+          .querySelectorAll(".type-btn")
+          .forEach((b) => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        selectedNewType = btn.dataset.type;
+      };
+
+      window.saveAddBloc = function () {
+        let nom = document.getElementById("addBlocNom").value.trim();
+        let pkVal = document
+          .getElementById("addBlocPk")
+          .value.replace(",", ".");
+        let pk = pkVal
+          ? Math.round(parseFloat(pkVal) * 1000)
+          : Math.round(currentPk);
+        if (!nom) nom = selectedNewType;
+        let newItem = {
+          pk,
+          type: selectedNewType,
+          nom,
+          _custom: true,
+          _userAdded: true,
+        };
+        activeData.push(newItem);
+        saveEditsToLS();
+        window.closeAddBloc();
+        // Pour les tunnels : refaire initView pour recalculer toutes les liaisons DEB↔FIN
+        if (
+          selectedNewType === "TUNNEL_DEB" ||
+          selectedNewType === "TUNNEL_FIN"
+        ) {
+          initView();
+        } else {
+          activeData.sort((a, b) =>
+            direction === "IMPAIR" ? a.pk - b.pk : b.pk - a.pk,
+          );
+          let el = document.createElement("div");
+          el.className = `track-obj type-${selectedNewType}`;
+          el.innerHTML = `<div class="track-connector"></div><div class="obj-card"><div class="obj-name">${nom}</div><div class="obj-pk">${(pk / 1000).toFixed(3)}</div></div>`;
+          newItem.el = el;
+          domContainer.appendChild(el);
+          setupLongPress(el, newItem);
+          updateVisuals();
+        }
+      };
+
+      window.saveEditObj = function () {
+        if (!editingItem) return;
+        let newNom = document.getElementById("editObjNom").value.trim();
+        let newPkVal = parseFloat(
+          document.getElementById("editObjPk").value.replace(",", "."),
+        );
+        if (!newNom && isNaN(newPkVal)) {
+          window.closeEditObj();
+          return;
+        }
+
+        // Récupérer le partenaire tunnel avant modification
+        var partnerInfoEl = document.getElementById("tunnelPartnerInfo");
+        var partner = partnerInfoEl._partner || null;
+        var syncNames = document.getElementById("tunnelSyncNames").checked;
+        var oldNom = editingItem.nom;
+
+        if (!editingItem._userAdded) {
+          let key = origKey(editingItem);
+          if (!modifiedBlocs[currentLine]) modifiedBlocs[currentLine] = [];
+          modifiedBlocs[currentLine] = modifiedBlocs[currentLine].filter(
+            (m) => m.origKey !== key,
+          );
+          if (newNom) editingItem.nom = newNom;
+          if (!isNaN(newPkVal)) editingItem.pk = Math.round(newPkVal * 1000);
+          modifiedBlocs[currentLine].push({
+            origKey: key,
+            pk: editingItem.pk,
+            type: editingItem.type,
+            nom: editingItem.nom,
+          });
+        } else {
+          if (newNom) editingItem.nom = newNom;
+          if (!isNaN(newPkVal)) editingItem.pk = Math.round(newPkVal * 1000);
+        }
+
+        // Synchroniser le partenaire tunnel si demandé et si le nom a changé
+        if (partner && syncNames && newNom && newNom !== oldNom) {
+          if (!partner._userAdded) {
+            let pKey = origKey(partner);
+            if (!modifiedBlocs[currentLine]) modifiedBlocs[currentLine] = [];
+            modifiedBlocs[currentLine] = modifiedBlocs[currentLine].filter(
+              (m) => m.origKey !== pKey,
+            );
+            partner.nom = newNom;
+            modifiedBlocs[currentLine].push({
+              origKey: pKey,
+              pk: partner.pk,
+              type: partner.type,
+              nom: partner.nom,
+            });
+          } else {
+            partner.nom = newNom;
+          }
+          if (partner.el) {
+            var nameEl = partner.el.querySelector(".obj-name");
+            if (nameEl) nameEl.innerText = newNom;
+          }
+        }
+
+        let saved = editingItem;
+        window.closeEditObj();
+        refreshItemDisplay(saved);
+        activeData.sort((a, b) =>
+          direction === "IMPAIR" ? a.pk - b.pk : b.pk - a.pk,
+        );
+        saveEditsToLS();
+        // Pour les tunnels : recalculer les liaisons visuelles
+        if (saved.type === "TUNNEL_DEB" || saved.type === "TUNNEL_FIN") {
+          initView();
+        } else {
+          updateVisuals();
+        }
+      };
+      function refreshItemDisplay(item) {
+        if (!item.el) return;
+        let nameEl = item.el.querySelector(".obj-name");
+        let pkEl = item.el.querySelector(".obj-pk");
+        if (nameEl) nameEl.textContent = item.nom || item.type;
+        if (pkEl) pkEl.textContent = (item.pk / 1000).toFixed(3);
+      }
+
+      function setupLongPress(el, item) {
+        let timer = null;
+        let moved = false;
+        el.addEventListener(
+          "touchstart",
+          (e) => {
+            if (!isEditMode) return;
+            moved = false;
+            el.classList.add("long-press-anim");
+            timer = setTimeout(() => {
+              if (!moved) {
+                el.classList.remove("long-press-anim");
+                window.openEditObj(item);
+              }
+            }, 600);
+          },
+          { passive: true },
+        );
+        el.addEventListener(
+          "touchmove",
+          () => {
+            moved = true;
+            clearTimeout(timer);
+            el.classList.remove("long-press-anim");
+          },
+          { passive: true },
+        );
+        el.addEventListener(
+          "touchend",
+          () => {
+            clearTimeout(timer);
+            el.classList.remove("long-press-anim");
+          },
+          { passive: true },
+        );
+        el.addEventListener("click", (e) => {
+          if (!isEditMode) return;
+          e.stopPropagation();
+          window.openEditObj(item);
+        });
+      }
+
+      // ============================================================
+      // LOGIQUE VITESSE — CORRIGÉE v10
+      // ============================================================
+      function calculateComplexSpeed() {
+        // 1. LTV manuelle prioritaire
+        let ltvLimit = null;
+        customOrders.forEach((o) => {
+          let min = Math.min(o.pk, o.pkEnd);
+          let max = Math.max(o.pk, o.pkEnd);
+          if (currentPk >= min && currentPk <= max)
+            ltvLimit = o.limits[currentTrainType] || o.limits.MA100;
+        });
+        if (ltvLimit !== null) return ltvLimit;
+
+        let pk = currentPk;
+
+        // ============================================================
+        // LIGNE CHAMBERY → MODANE (sens IMPAIR, PK croissant)
+        // ============================================================
+        if (currentLine === "CHAMBERY_MODANE") {
+          if (!isContreSens) {
+            // Voie 1 NORMALE sens impair : lecture des pancartes VITESSE
+            return scanSpeedSigns();
+          } else {
+            // Voie 2 CONTRE-SENS (IPCS) sens impair Chambéry→Modane
+            // Chambéry (137,6) → Comm. 161,5 : ME100=100 / MA100=90 / MA90=90 / MA80=80
+            // puis Comm. 161,5 → Bif 162,3 : idem
+            // (pas de différence entre les deux tronçons sur V2 CS impair)
+            if (currentTrainType === "ME100") return 100;
+            if (currentTrainType === "MA100") return 90;
+            if (currentTrainType === "MA90") return 90;
+            if (currentTrainType === "MA80") return 80;
+          }
+        }
+
+        // ============================================================
+        // LIGNE MODANE → CHAMBERY (sens PAIR, PK décroissant)
+        // ============================================================
+        if (currentLine === "MODANE_CHAMBERY") {
+          if (!isContreSens) {
+            // Voie 2 NORMALE sens pair
+            if (pk >= 206900) {
+              // Modane → St Michel Valloire (220360) → Viaduc Longefan (206900)
+              // ME100=70, MA100=70, MA90=70, MA80=40
+              if (currentTrainType === "ME100") return 70;
+              if (currentTrainType === "MA100") return 70;
+              if (currentTrainType === "MA90") return 70;
+              if (currentTrainType === "MA80") return 40;
+            } else if (pk >= 184800) {
+              // Sortie Viaduc → Pancarte km 184,8
+              // ME100=90, MA100=90, MA90=80, MA80=60
+              if (currentTrainType === "ME100") return 90;
+              if (currentTrainType === "MA100") return 90;
+              if (currentTrainType === "MA90") return 80;
+              if (currentTrainType === "MA80") return 60;
+            } else if (pk >= 175198) {
+              // Pancarte 184,8 → Aiguebelle : ME120=105 → on prend 100 pour ME100
+              if (currentTrainType === "ME100") return 100;
+              if (currentTrainType === "MA100") return 100;
+              if (currentTrainType === "MA90") return 90;
+              if (currentTrainType === "MA80") return 80;
+            } else if (pk >= 162300) {
+              // Aiguebelle → Bif Montmélian (PK 150,7) : ME120=110, ME100=100, MA100=100, MA90=90, MA80=80
+              if (currentTrainType === "ME100") return 100;
+              if (currentTrainType === "MA100") return 100;
+              if (currentTrainType === "MA90") return 90;
+              if (currentTrainType === "MA80") return 80;
+            } else {
+              // Bif Montmélian → Chambéry : ME120=120, ME100=100, MA100=100, MA90=90, MA80=80
+              if (currentTrainType === "ME100") return 100;
+              if (currentTrainType === "MA100") return 100;
+              if (currentTrainType === "MA90") return 90;
+              if (currentTrainType === "MA80") return 80;
+            }
+          } else {
+            // Voie 1 CONTRE-SENS (V1 sens pair = rouler à contre-sens)
+            if (pk >= 206900) {
+              // Modane → St Jean CS : ME100=70, MA100=70, MA90=70, MA80=40
+              if (currentTrainType === "ME100") return 70;
+              if (currentTrainType === "MA100") return 70;
+              if (currentTrainType === "MA90") return 70;
+              if (currentTrainType === "MA80") return 40;
+            } else if (pk >= 198080) {
+              // Viaduc → St Avre (V1 sens pair CS) : ME100=90, MA100=90, MA90=80, MA80=60
+              if (currentTrainType === "ME100") return 90;
+              if (currentTrainType === "MA100") return 90;
+              if (currentTrainType === "MA90") return 80;
+              if (currentTrainType === "MA80") return 60;
+            } else if (pk >= 162300) {
+              // St Avre → Bif St Pierre d'Albigny (V1 CS)
+              // ME100=100, MA100=90, MA90=80, MA80=80
+              if (currentTrainType === "ME100") return 100;
+              if (currentTrainType === "MA100") return 90;
+              if (currentTrainType === "MA90") return 80;
+              if (currentTrainType === "MA80") return 80;
+            } else {
+              // Bif St Pierre → Chambéry : ME120=120, ME100=100, MA100=90, MA90=80, MA80=80
+              if (currentTrainType === "ME100") return 100;
+              if (currentTrainType === "MA100") return 90;
+              if (currentTrainType === "MA90") return 80;
+              if (currentTrainType === "MA80") return 80;
+            }
+          }
+        }
+
+        // ============================================================
+        // LIGNE CHAMBERY → AMBERIEU (sens PAIR, PK décroissant)
+        // ============================================================
+        if (currentLine === "CHAMBERY_AMBERIEU") {
+          if (!isContreSens) {
+            // Voie 2 normale sens pair (Chambéry → Ambérieu)
+            // Lecture pancartes VITESSE (scanSpeedSigns gère la direction PAIR)
+            return scanSpeedSigns();
+          } else {
+            // Voie 1 contre-sens (IPCS) Chambéry→Ambérieu
+            // Mêmes vitesses que voie 2 d'après tableau image 2
+            return scanSpeedSigns();
+          }
+        }
+
+        // ============================================================
+        // LIGNE AMBERIEU → CHAMBERY (sens IMPAIR, PK croissant)
+        // ============================================================
+        if (currentLine === "AMBERIEU_CHAMBERY") {
+          if (!isContreSens) {
+            return scanSpeedSigns();
+          } else {
+            // Contre-sens Ambérieu→Chambéry sur V2
+            // Même logique que voie 1 sens pair avec quelques ajustements
+            return scanSpeedSigns();
+          }
+        }
+
+        // ============================================================
+        // ============================================================
+        // LIGNES TARENTAISE
+        // MA100 = 70 tout le long sur toutes les sections
+        // ME100/HLP :
+        //   SPA↔ALV          → 80 tout le long
+        //   ALV→PBM          → 80 de ALV jusqu'à AIG (PK 49,473), puis 70 de AIG à PBM
+        //   PBM→ALV          → 70 de PBM jusqu'à MOS (PK 51,659), puis 80 de MOS à ALV
+        // ============================================================
+        if (["SPA_ALV", "ALV_SPA"].includes(currentLine)) {
+          if (currentTrainType === "ME100") return 80;
+          return 70;
+        }
+        if (currentLine === "ALV_PBM") {
+          if (currentTrainType === "ME100") {
+            // PK locaux : AIG = 49473, on est en PK locaux (23600 à 57229)
+            return pk <= 49473 ? 80 : 70;
+          }
+          return 70;
+        }
+        if (currentLine === "PBM_ALV") {
+          if (currentTrainType === "ME100") {
+            // PK locaux : MOS = 51659, on vient de PBM (57229) vers ALV (23600)
+            return pk >= 51659 ? 70 : 80;
+          }
+          return 70;
+        }
+
+        return "---";
+      }
+
+      function scanSpeedSigns() {
+        // Trouve la dernière pancarte VITESSE dépassée selon la direction
+        let validLimits = activeData.filter(
+          (item) => item.type === "VITESSE" && item.limits,
+        );
+        let bestLimit = null;
+        if (direction === "IMPAIR") {
+          // PK croissant : la dernière pancarte dépassée = plus grand PK <= currentPk
+          let passed = validLimits
+            .filter((i) => i.pk <= currentPk)
+            .sort((a, b) => a.pk - b.pk);
+          if (passed.length > 0) bestLimit = passed[passed.length - 1];
+        } else {
+          // PK décroissant : la dernière pancarte dépassée = plus petit PK >= currentPk
+          let passed = validLimits
+            .filter((i) => i.pk >= currentPk)
+            .sort((a, b) => a.pk - b.pk);
+          if (passed.length > 0) bestLimit = passed[0];
+        }
+        if (bestLimit && bestLimit.limits) {
+          return (
+            bestLimit.limits[currentTrainType] ||
+            bestLimit.limits["MA100"] ||
+            "---"
+          );
+        }
+        return "---";
+      }
+
+      // ============================================================
+      // UI HELPERS
+      // ============================================================
+      window.openModal = function (id) {
+        document
+          .getElementById(id === "config" ? "modalConfig" : "modalOrder")
+          .classList.remove("hidden");
+      };
+      window.closeModal = function (id) {
+        if (id === "config")
+          document.getElementById("modalConfig").classList.add("hidden");
+        else if (id === "order")
+          document.getElementById("modalOrder").classList.add("hidden");
+        else if (id === "pk")
+          document.getElementById("modalPk").classList.add("hidden");
+      };
+      window.signalIncident = function () {
+        incidentPk = currentPk; // Capturer le PK au moment du clic
+        document.getElementById("incidentAlert").classList.remove("hidden");
+        document.getElementById("incidentPkVal").innerText = (
+          incidentPk / 1000
+        ).toFixed(3);
+        document.getElementById("minimizedAlert").classList.add("hidden");
+      };
+      window.minimizeIncident = function () {
+        document.getElementById("incidentAlert").classList.add("hidden");
+        document.getElementById("minimizedAlert").classList.remove("hidden");
+        document.getElementById("minimizedPkVal").innerText = (
+          incidentPk / 1000
+        ).toFixed(3);
+      };
+      window.restoreIncident = function () {
+        document.getElementById("minimizedAlert").classList.add("hidden");
+        document.getElementById("incidentAlert").classList.remove("hidden");
+      };
+      window.closeIncident = function () {
+        document.getElementById("incidentAlert").classList.add("hidden");
+        document.getElementById("minimizedAlert").classList.add("hidden");
+        incidentPk = null; // Réinitialiser
+      };
+      window.changeLine = function () {
+        currentLine = document.getElementById("lineSelect").value;
+        if (currentLine === "CHAMBERY_MODANE") {
+          direction = "IMPAIR";
+          currentPk = 137600;
+        } else if (currentLine === "MODANE_CHAMBERY") {
+          direction = "PAIR";
+          currentPk = 220360;
+        } else if (currentLine === "CHAMBERY_AMBERIEU") {
+          direction = "PAIR";
+          currentPk = 137600;
+        } else if (currentLine === "AMBERIEU_CHAMBERY") {
+          direction = "IMPAIR";
+          currentPk = 51400;
+        } else if (currentLine === "SPA_ALV") {
+          direction = "IMPAIR";
+          currentPk = 0;
+        } else if (currentLine === "ALV_PBM") {
+          direction = "IMPAIR";
+          currentPk = 23600;
+        } else if (currentLine === "PBM_ALV") {
+          direction = "PAIR";
+          currentPk = 57229;
+        } else if (currentLine === "ALV_SPA") {
+          direction = "PAIR";
+          currentPk = 23625;
+        }
+        // Reset contre-sens quand on change de ligne
+        isContreSens = false;
+        document.getElementById("csToggle").checked = false;
+        initView();
+      };
+      window.toggleContreSens = function () {
+        isContreSens = document.getElementById("csToggle").checked;
+        initView();
+      };
+      window.updateSettings = function () {
+        currentTrainType = document.getElementById("trainSelect").value;
+      };
+      window.toggleStop = function (forcePause = false) {
+        const btn = document.getElementById("btnStop");
+        if (forcePause) {
+          isPaused = true;
+          isGpsActive = false;
+        } else {
+          isPaused = !isPaused;
+        }
+        if (isPaused) {
+          btn.classList.add("active");
+          btn.innerText = "GO";
+          document.getElementById("gpsStatus").className = "status-pill lost";
+          document.getElementById("gpsStatus").innerText = "MANUEL";
+        } else {
+          btn.classList.remove("active");
+          btn.innerText = "STOP";
+          isGpsActive = true;
+          document.getElementById("gpsStatus").className = "status-pill ok";
+          document.getElementById("gpsStatus").innerText = "GPS ON";
+        }
+      };
+      window.addOrder = function () {
+        let s = parseFloat(document.getElementById("orderPkStart").value);
+        let e = parseFloat(document.getElementById("orderPkEnd").value);
+        let v = document.getElementById("orderSpeed").value;
+        if (s && e && v) {
+          customOrders.push({
+            pk: Math.round(s * 1000),
+            pkEnd: Math.round(e * 1000),
+            type: "ORDRE",
+            nom: "LTV " + v,
+            limits: { MA100: v, ME100: v, MA90: v, MA80: v },
+          });
+          initView();
+          renderOrdersList();
+          document.getElementById("orderPkStart").value = "";
+          document.getElementById("orderPkEnd").value = "";
+          document.getElementById("orderSpeed").value = "";
+        }
+      };
+      window.removeOrder = function (index) {
+        customOrders.splice(index, 1);
+        initView();
+        renderOrdersList();
+      };
+      function renderOrdersList() {
+        let html = customOrders
+          .map(
+            (o, i) =>
+              `<div class="order-item"><span>PK ${o.pk / 1000}-${o.pkEnd / 1000} : ${o.limits.MA100}</span><span class="order-del" onclick="window.removeOrder(${i})">✕</span></div>`,
+          )
+          .join("");
+        document.getElementById("ordersList").innerHTML =
+          html || "<div class='empty-msg'>Aucune LTV</div>";
+      }
+      function updateClock() {
+        const now = new Date();
+        document.getElementById("clockDisplay").innerText =
+          now.getHours() + ":" + String(now.getMinutes()).padStart(2, "0");
+      }
+      window.askPk = function () {
+        if (!isPaused) window.toggleStop();
+        document.getElementById("inputPkVal").value = "";
+        document.getElementById("modalPk").classList.remove("hidden");
+        setTimeout(() => document.getElementById("inputPkVal").focus(), 100);
+      };
+      window.submitPk = function () {
+        let val = document.getElementById("inputPkVal").value;
+        if (val) {
+          val = val.replace(",", ".");
+          let newPk = parseFloat(val);
+          if (!isNaN(newPk)) {
+            currentPk = newPk * 1000;
+            isGpsActive = false;
+            document.getElementById("gpsStatus").className = "status-pill lost";
+            document.getElementById("gpsStatus").innerText = "MANUEL";
+            updateVisuals();
+          }
+        }
+        window.closeModal("pk");
+      };
+      window.adjustPk = function (amount) {
+        currentPk += amount;
+        updateVisuals();
+      };
+
+      // ============================================================
+      // BOUCLE DE JEU
+      // ============================================================
+      function gameLoop(timestamp) {
+        let dt = (timestamp - lastFrameTime) / 1000;
+        lastFrameTime = timestamp;
+        if (!isPaused) {
+          let speedToUse = 0;
+          if (isGpsActive && !isGpsLost) {
+            // Mode normal GPS
+            speedToUse = currentSpeedMs;
+          } else if (isGpsLost) {
+            // Mode GPS perdu : on roule à la vitesse manuelle ou à la dernière vitesse connue
+            speedToUse =
+              manualSpeedMs !== null ? manualSpeedMs : lastKnownSpeedMs;
+          }
+          if (Math.abs(speedToUse) > 0.1) {
+            let dirFactor = direction === "IMPAIR" ? 1 : -1;
+            currentPk += speedToUse * dt * dirFactor;
+          }
+        }
+        updateVisuals();
+        requestAnimationFrame(gameLoop);
+      }
+
+      function updateVisuals() {
+        let screenH = domViewport.clientHeight || window.innerHeight;
+        if (!screenH || screenH < 100) screenH = window.innerHeight;
+        const cursorY = screenH * 0.75;
+
+        document.getElementById("currentPkDisplay").innerText =
+          "PK " + (currentPk / 1000).toFixed(3);
+        let nearestItem = null;
+        let minNextDist = Infinity;
+        let nextStation = null;
+        let minStDist = Infinity;
+        let currentLimit = calculateComplexSpeed();
+        domLimit.innerText = currentLimit;
+        let currentKmH = isGpsLost
+          ? Math.round(
+              (manualSpeedMs !== null ? manualSpeedMs : lastKnownSpeedMs) * 3.6,
+            )
+          : currentSpeedMs * 3.6;
+        if (document.getElementById("speedDisplay")) {
+          document.getElementById("speedDisplay").innerText =
+            Math.round(currentKmH);
+        }
+        if (!isNaN(currentLimit) && currentLimit !== "---") {
+          if (currentKmH > parseFloat(currentLimit) + 2) {
+            domOverspeed.classList.remove("hidden");
+          } else {
+            domOverspeed.classList.add("hidden");
+          }
+        } else {
+          domOverspeed.classList.add("hidden");
+        }
+
+        customOrders.forEach((o) => {
+          let startDist =
+            direction === "IMPAIR" ? o.pk - currentPk : currentPk - o.pk;
+          let endDist =
+            direction === "IMPAIR" ? o.pkEnd - currentPk : currentPk - o.pkEnd;
+          let yStart = cursorY - startDist * SCALE;
+          let yEnd = cursorY - endDist * SCALE;
+          let top = Math.min(yStart, yEnd);
+          let height = Math.abs(yStart - yEnd);
+          if (o.elZone) {
+            o.elZone.style.top = top + "px";
+            o.elZone.style.height = height + "px";
+          }
+        });
+
+        // Zones vitesse (statiques, recalculées seulement si changement de ligne)
+        document.querySelectorAll(".speed-zone").forEach((z) => {
+          let distStart =
+            direction === "IMPAIR"
+              ? z._pkStart - currentPk
+              : currentPk - z._pkStart;
+          let distEnd =
+            direction === "IMPAIR"
+              ? z._pkEnd - currentPk
+              : currentPk - z._pkEnd;
+          let yStart = cursorY - distStart * SCALE;
+          let yEnd = cursorY - distEnd * SCALE;
+          z.style.top = Math.min(yStart, yEnd) + "px";
+          z.style.height = Math.abs(yStart - yEnd) + "px";
+        });
+        // Zones tunnel : recalculées dynamiquement depuis activeData (suivent les modifs éditeur)
+        activeData.forEach((item) => {
+          if (!item || item.type !== "TUNNEL_DEB" || !item.elZone) return;
+          if (!item.elZoneFin) {
+            // DEB sans FIN correspondant : masquer la zone
+            item.elZone.style.height = "0px";
+            return;
+          }
+          let pkDeb = item.pk;
+          let pkFin = item.elZoneFin.pk;
+          let distStart =
+            direction === "IMPAIR" ? pkDeb - currentPk : currentPk - pkDeb;
+          let distEnd =
+            direction === "IMPAIR" ? pkFin - currentPk : currentPk - pkFin;
+          let yStart = cursorY - distStart * SCALE;
+          let yEnd = cursorY - distEnd * SCALE;
+          item.elZone.style.top = Math.min(yStart, yEnd) + "px";
+          item.elZone.style.height = Math.abs(yStart - yEnd) + "px";
+        });
+
+        activeData.forEach((item) => {
+          if (!item.el) return;
+          let dist =
+            direction === "IMPAIR" ? item.pk - currentPk : currentPk - item.pk;
+          let posY = cursorY - dist * SCALE;
+          if (posY > -2000 && posY < screenH + 2000) {
+            item.el.style.display = "flex";
+            item.el.style.top = posY + "px";
+            if (Math.abs(posY - cursorY) < 30) item.el.classList.add("active");
+            else item.el.classList.remove("active");
+          } else {
+            item.el.style.display = "none";
+          }
+          if (dist > 0) {
+            if (dist < minNextDist) {
+              minNextDist = dist;
+              nearestItem = item;
+            }
+            if (item.type === "GARE" && dist < minStDist) {
+              minStDist = dist;
+              nextStation = item;
+            }
+          }
+        });
+
+        if (nextStation) {
+          domStationName.innerText = nextStation.nom;
+          domStationPk.innerText = "PK " + (nextStation.pk / 1000).toFixed(3);
+        } else {
+          domStationName.innerText = "TERMINUS";
+          domStationPk.innerText = "";
+        }
+
+        if (nearestItem) {
+          domEventName.innerHTML = nearestItem.nom;
+          let distDisplay = "";
+          if (minNextDist < 10000) {
+            distDisplay = ` <span class="dist-badge">${Math.round(minNextDist)}m</span>`;
+          }
+          domEventPk.innerHTML =
+            "PK " + (nearestItem.pk / 1000).toFixed(3) + distDisplay;
+        } else {
+          domEventName.innerText = "-";
+          domEventPk.innerText = "";
+        }
+      }
+
+      // ============================================================
+      // INIT VIEW
+      // ============================================================
+      function initView() {
+        let raw = [];
+        if (currentLine === "CHAMBERY_MODANE") {
+          raw = dataImpairBase;
+          direction = "IMPAIR";
+        } else if (currentLine === "MODANE_CHAMBERY") {
+          raw = dataPairBase;
+          direction = "PAIR";
+        } else if (currentLine === "CHAMBERY_AMBERIEU") {
+          raw = dataChamberyAmberieuPair;
+          direction = "PAIR";
+        } else if (currentLine === "AMBERIEU_CHAMBERY") {
+          raw = dataChamberyAmberieuImpair;
+          direction = "IMPAIR";
+        } else if (currentLine === "SPA_ALV") {
+          raw = dataSPA_ALV;
+          direction = "IMPAIR";
+        } else if (currentLine === "ALV_PBM") {
+          raw = dataALV_PBM;
+          direction = "IMPAIR";
+        } else if (currentLine === "PBM_ALV") {
+          raw = dataPBM_ALV;
+          direction = "PAIR";
+        } else if (currentLine === "ALV_SPA") {
+          raw = dataALV_SPA;
+          direction = "PAIR";
+        }
+        if (!raw) raw = [];
+
+        let filtered = raw.filter((item) => {
+          if (!item) return false;
+          if (!item.track) return true;
+          if (isContreSens) return item.track === "CS";
+          else return item.track === "NORMAL";
+        });
+        // Charger les modifications sauvegardées pour cette ligne
+        let edits = loadEditsFromLS(currentLine);
+
+        // Initialiser les registres en mémoire depuis le LS
+        if (!deletedBlocs[currentLine])
+          deletedBlocs[currentLine] = edits.deleted || [];
+        if (!modifiedBlocs[currentLine])
+          modifiedBlocs[currentLine] = edits.modified || [];
+
+        // 1. Appliquer les modifications de blocs natifs (pk ou nom changé)
+        let modMap = {};
+        (modifiedBlocs[currentLine] || []).forEach((m) => {
+          modMap[m.origKey] = m;
+        });
+        filtered = filtered.map((item) => {
+          let key = item.pk + "|" + item.type + "|" + item.nom;
+          if (modMap[key]) {
+            let m = modMap[key];
+            return { ...item, pk: m.pk, nom: m.nom, _origKey: key };
+          }
+          item._origKey = key; // mémoriser la clé d'origine sur tous les blocs natifs
+          return item;
+        });
+
+        // 2. Appliquer les suppressions (après les modifs car les clés sont d'origine)
+        let deletedKeys = new Set(deletedBlocs[currentLine] || []);
+        filtered = filtered.filter((item) => !deletedKeys.has(item._origKey));
+
+        // 3. Ajouter les blocs custom sauvegardés (AVEC nettoyage anti-doublons)
+        //    - on ignore toute entrée identique à un bloc natif (clé pk|type|nom)
+        //    - on ignore les doublons entre eux
+        //    Ceci répare l'affichage même si le localStorage est déjà pollué,
+        //    et réécrit une version propre du cache.
+        let nativeKeys = new Set(
+          (raw || [])
+            .filter(Boolean)
+            .map((i) => i.pk + "|" + i.type + "|" + i.nom),
+        );
+        let seenCustom = {};
+        let cleanedAdded = [];
+        (edits.added || []).forEach(function (i) {
+          let k = i.pk + "|" + i.type + "|" + i.nom;
+          if (nativeKeys.has(k)) return; // déjà présent nativement → on jette
+          if (seenCustom[k]) return; // doublon → on jette
+          seenCustom[k] = true;
+          cleanedAdded.push(i);
+        });
+        // Si on a retiré des doublons, on réécrit le localStorage nettoyé
+        if (cleanedAdded.length !== (edits.added || []).length) {
+          try {
+            localStorage.setItem(
+              lsKey(currentLine),
+              JSON.stringify({
+                added: cleanedAdded,
+                deleted: deletedBlocs[currentLine] || [],
+                modified: modifiedBlocs[currentLine] || [],
+              }),
+            );
+          } catch (e) {}
+        }
+        let savedCustom = cleanedAdded.map((i) => ({
+          ...i,
+          _custom: true,
+          _userAdded: true,
+        }));
+
+        let ltvPoints = [];
+        customOrders.forEach((o) => {
+          ltvPoints.push({
+            pk: o.pk,
+            type: "ORDRE",
+            nom: o.nom,
+            limits: o.limits,
+          });
+          ltvPoints.push({
+            pk: o.pkEnd,
+            type: "ORDRE_FIN",
+            nom: "FIN " + o.nom,
+          });
+        });
+        activeData = [...filtered, ...savedCustom, ...ltvPoints].sort((a, b) =>
+          direction === "IMPAIR" ? a.pk - b.pk : b.pk - a.pk,
+        );
+        domContainer.innerHTML = "";
+        customOrders.forEach((o) => {
+          let z = document.createElement("div");
+          z.className = "ltv-zone";
+          o.elZone = z;
+          domContainer.appendChild(z);
+        });
+        // Zones hachurées rouges = zones où la vitesse est inférieure à la vitesse max de la ligne
+        // Désactivées sur RT5077 (pas de réduction, tout est signalé terrain)
+        const isRT5077 = ["SPA_ALV", "ALV_PBM", "PBM_ALV", "ALV_SPA"].includes(
+          currentLine,
+        );
+        if (!isRT5077) {
+          // Vitesse max de la ligne = valeur de la première pancarte (celle au départ)
+          let vitesseBlocs = filtered
+            .filter((i) => i && i.type === "VITESSE")
+            .sort((a, b) =>
+              direction === "IMPAIR" ? a.pk - b.pk : b.pk - a.pk,
+            );
+          // Trouver la vitesse max de la ligne (première pancarte dans le sens de marche)
+          let lineMaxSpeed = 100;
+          if (vitesseBlocs.length > 0) {
+            let first = vitesseBlocs[0];
+            lineMaxSpeed = first.limits
+              ? first.limits[currentTrainType] || first.limits["MA100"]
+              : parseInt(first.nom);
+          }
+          for (let i = 0; i < vitesseBlocs.length - 1; i++) {
+            let v = vitesseBlocs[i];
+            let vitesseVal = v.limits
+              ? v.limits[currentTrainType] || v.limits["MA100"]
+              : parseInt(v.nom);
+            // Hachures seulement si cette zone est à 80 ou moins (pas pour les zones 90)
+            if (parseInt(vitesseVal) <= 80) {
+              let z = document.createElement("div");
+              z.className = "speed-zone";
+              // pkStart = pk de cette pancarte, pkEnd = pk de la pancarte suivante dans le sens de marche
+              z._pkStart = v.pk;
+              z._pkEnd = vitesseBlocs[i + 1].pk;
+              domContainer.appendChild(z);
+            }
+          }
+        }
+        // Zones tunnel : liaisons DEB↔FIN par nom d'abord, puis par proximité PK
+        let allDEB = activeData.filter((i) => i && i.type === "TUNNEL_DEB");
+        let allFIN = activeData.filter((i) => i && i.type === "TUNNEL_FIN");
+        allDEB.forEach((d) => {
+          d.elZoneFin = null;
+          d.elZone = null;
+        });
+        allFIN.forEach((f) => {
+          f.elZoneDeb = null;
+        });
+
+        // Passe 1 : lier par nom exact (DEB et FIN avec le même nom)
+        allDEB.forEach((deb) => {
+          let sameName = allFIN.filter(
+            (f) => !f.elZoneDeb && f.nom === deb.nom,
+          );
+          if (sameName.length > 0) {
+            // Prendre le FIN le plus proche en distance absolue de PK
+            let fin = sameName.reduce((a, b) =>
+              Math.abs(a.pk - deb.pk) < Math.abs(b.pk - deb.pk) ? a : b,
+            );
+            let z = document.createElement("div");
+            z.className = "tunnel-zone";
+            domContainer.appendChild(z);
+            deb.elZone = z;
+            deb.elZoneFin = fin;
+            fin.elZoneDeb = deb;
+          }
+        });
+
+        // Passe 2 : lier les DEB restants par proximité PK dans le sens de marche
+        allDEB
+          .filter((d) => !d.elZoneFin)
+          .forEach((deb) => {
+            let candidates;
+            if (direction === "IMPAIR") {
+              candidates = allFIN.filter((f) => !f.elZoneDeb && f.pk > deb.pk);
+              if (candidates.length > 0) {
+                let fin = candidates.reduce((a, b) => (a.pk < b.pk ? a : b));
+                let z = document.createElement("div");
+                z.className = "tunnel-zone";
+                domContainer.appendChild(z);
+                deb.elZone = z;
+                deb.elZoneFin = fin;
+                fin.elZoneDeb = deb;
+              }
+            } else {
+              // En PAIR : chercher FIN dans les deux directions, prendre le plus proche
+              candidates = allFIN.filter((f) => !f.elZoneDeb);
+              if (candidates.length > 0) {
+                let fin = candidates.reduce((a, b) =>
+                  Math.abs(a.pk - deb.pk) < Math.abs(b.pk - deb.pk) ? a : b,
+                );
+                let z = document.createElement("div");
+                z.className = "tunnel-zone";
+                domContainer.appendChild(z);
+                deb.elZone = z;
+                deb.elZoneFin = fin;
+                fin.elZoneDeb = deb;
+              }
+            }
+          });
+        activeData.forEach((item) => {
+          if (!item) return;
+          let el = document.createElement("div");
+          let cssType = item.type;
+          if (item.type === "TUNNEL_INT") cssType = "TUNNEL";
+          el.className = `track-obj type-${cssType}`;
+          let html = `<div class="track-connector"></div><div class="obj-card"><div class="obj-name">${item.nom || item.type}</div><div class="obj-pk">${(item.pk / 1000).toFixed(3)}</div></div>`;
+          el.innerHTML = html;
+          item.el = el;
+          domContainer.appendChild(el);
+          setupLongPress(el, item);
+        });
+      }
+
+      // ============================================================
+      // GESTION TACTILE
+      // ============================================================
+      const view = document.getElementById("trackViewport");
+      if (view) {
+        view.addEventListener(
+          "touchstart",
+          (e) => {
+            if (e.target.closest(".btn-calib")) return;
+            if (isEditMode) return;
+            window.toggleStop(true);
+            lastTouchY = e.touches[0].clientY;
+          },
+          { passive: false },
+        );
+
+        view.addEventListener(
+          "touchmove",
+          (e) => {
+            if (e.target.closest(".btn-calib")) return;
+            if (isEditMode) return;
+            if (e.cancelable) e.preventDefault();
+            e.stopImmediatePropagation();
+            let y = e.touches[0].clientY;
+            let delta = lastTouchY - y;
+            let meters = delta / SCALE;
+            if (direction === "IMPAIR") currentPk += meters;
+            else currentPk -= meters;
+            lastTouchY = y;
+            updateVisuals();
+          },
+          { passive: false },
+        );
+      }
+
+      // ============================================================
+      // GPS
+      // ============================================================
+      let lastValidSpeedTime = 0; // timestamp de la dernière vitesse GPS valide reçue
+
+      function enterTunnelMode() {
+        if (isGpsLost) return;
+        isGpsLost = true;
+        gpsLostTimer = null;
+        if (manualSpeedMs === null) manualSpeedMs = lastKnownSpeedMs;
+        document.getElementById("speedDisplay").innerText = Math.round(
+          (manualSpeedMs || 0) * 3.6,
+        );
+        // CORRECTIF : .hidden a "display:none !important" qui écrase le style inline.
+        // Il FAUT retirer la classe hidden, pas seulement changer le display.
+        var bMinus = document.getElementById("btnGpsAdjMinus");
+        var bPlus = document.getElementById("btnGpsAdjPlus");
+        bMinus.classList.remove("hidden");
+        bPlus.classList.remove("hidden");
+        bMinus.style.display = "flex";
+        bPlus.style.display = "flex";
+        document.querySelector(".speed-group").classList.add("gps-lost-mode");
+        document.getElementById("gpsStatus").className = "status-pill lost";
+        document.getElementById("gpsStatus").innerText = "TUNNEL";
+      }
+
+      function exitTunnelMode(speed) {
+        isGpsLost = false;
+        manualSpeedMs = null;
+        currentSpeedMs = speed;
+        lastKnownSpeedMs = speed;
+        var bMinus = document.getElementById("btnGpsAdjMinus");
+        var bPlus = document.getElementById("btnGpsAdjPlus");
+        bMinus.style.display = "none";
+        bPlus.style.display = "none";
+        bMinus.classList.add("hidden");
+        bPlus.classList.add("hidden");
+        document
+          .querySelector(".speed-group")
+          .classList.remove("gps-lost-mode");
+        if (isGpsActive && !isPaused) {
+          document.getElementById("gpsStatus").className = "status-pill ok";
+          document.getElementById("gpsStatus").innerText = "GPS ON";
+        }
+      }
+
+      function initGPS() {
+        if (navigator.geolocation) {
+          navigator.geolocation.watchPosition(onGpsSuccess, onGpsError, {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 5000,
+          });
+        }
+      }
+
+      function onGpsSuccess(pos) {
+        let speed = pos.coords.speed;
+        if (speed === null || speed < 0) speed = 0;
+
+        // Vitesse valide (> 5 km/h) : sortie de tunnel ou mode normal
+        if (speed >= 1.4) {
+          lastValidSpeedTime = Date.now();
+          if (gpsLostTimer) {
+            clearTimeout(gpsLostTimer);
+            gpsLostTimer = null;
+          }
+          if (isGpsLost) {
+            exitTunnelMode(speed);
+            return;
+          }
+          currentSpeedMs = speed;
+          lastKnownSpeedMs = speed;
+          if (isGpsActive && !isPaused) {
+            document.getElementById("gpsStatus").className = "status-pill ok";
+            document.getElementById("gpsStatus").innerText = "GPS ON";
+          }
+          return;
+        }
+
+        // Vitesse nulle ou quasi-nulle
+        if (isGpsLost) return; // déjà en mode tunnel, on ne touche à rien
+
+        // Si on roulait et que la vitesse est tombée à 0 :
+        // on attend 3 secondes sans vitesse valide avant de passer en mode tunnel
+        // (évite le faux positif à l'arrêt en gare)
+        if (lastKnownSpeedMs > 1.4) {
+          if (!gpsLostTimer) {
+            gpsLostTimer = setTimeout(function () {
+              // 3 secondes sans vitesse valide → mode tunnel
+              if (!isGpsLost) enterTunnelMode();
+            }, 3000);
+          }
+        }
+      }
+
+      function onGpsError(err) {
+        document.getElementById("gpsStatus").className = "status-pill waiting";
+        document.getElementById("gpsStatus").innerText = "SIGNAL...";
+        if (!gpsLostTimer && !isGpsLost) {
+          gpsLostTimer = setTimeout(function () {
+            enterTunnelMode();
+          }, 1000);
+        }
+      }
+
+      window.gpsAdjSpeed = function (deltaKmh) {
+        if (!isGpsLost) return;
+        let currentKmh = Math.round((manualSpeedMs || 0) * 3.6);
+        currentKmh = Math.max(0, Math.min(200, currentKmh + deltaKmh));
+        manualSpeedMs = currentKmh / 3.6;
+        document.getElementById("speedDisplay").innerText = currentKmh;
+      };
+
+      // ============================================================
+      // DONNÉES : CHAMBERY → MODANE (sens IMPAIR)
+      // ============================================================
+      let dataImpairBase = [
+        { pk: 137000, type: "SIGNAL", nom: "Nf", track: "NORMAL" },
+        { pk: 137300, type: "SIGNAL", nom: "Nf", track: "NORMAL" },
+        { pk: 137600, type: "GARE", nom: "CHAMBERY" },
+        {
+          pk: 138000,
+          type: "VITESSE",
+          nom: "100",
+          limits: { ME100: 100, MA100: 100, MA90: 90, MA80: 80 },
+        },
+        { pk: 138100, type: "PN", nom: "PN 27" },
+        { pk: 138600, type: "SIGNAL", nom: "Carré 323", track: "NORMAL" },
+        { pk: 140100, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 141300, type: "PN", nom: "PN 31" },
+        { pk: 141500, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 141580, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 142050, type: "PN", nom: "PN 32" },
+        { pk: 142900, type: "SIGNAL_CS", nom: "Carré 13 (CS)", track: "CS" },
+        { pk: 142945, type: "SIGNAL", nom: "Carré 11", track: "NORMAL" },
+        { pk: 144300, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 146000, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 146500, type: "PN", nom: "PN 34" },
+        { pk: 147560, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 148500, type: "PN", nom: "PN 36" },
+        { pk: 149100, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 149150, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 149250, type: "PN", nom: "PN 37" },
+        { pk: 149627, type: "INFO", nom: "TIV pointe", _custom: true },
+        { pk: 150300, type: "SIGNAL", nom: "Carré 103", track: "NORMAL" },
+        { pk: 150300, type: "SIGNAL_CS", nom: "Carré 101 (CS)", track: "CS" },
+        { pk: 150900, type: "GARE", nom: "MONTMELIAN" },
+        { pk: 151150, type: "SIGNAL", nom: "Carré 123", track: "NORMAL" },
+        { pk: 152820, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 154700, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 154740, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 154850, type: "PN", nom: "PN 39" },
+        { pk: 156100, type: "SIGNAL_CS", nom: "Carré (CS)", track: "CS" },
+        {
+          pk: 156200,
+          type: "TUNNEL_DEB",
+          nom: "Galerie du record",
+          _custom: true,
+        },
+        { pk: 156300, type: "TUNNEL_FIN", nom: "Galerie du record" },
+        { pk: 156930, type: "SIGNAL", nom: "Carré", track: "NORMAL" },
+        { pk: 157200, type: "INFO", nom: "DBC Voie 2 (CS)", track: "CS" },
+        { pk: 157270, type: "INFO", nom: "DBC Voie 1", track: "NORMAL" },
+        { pk: 157520, type: "PN", nom: "PN 41" },
+        { pk: 158980, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 159940, type: "PN", nom: "PN 42" },
+        { pk: 160100, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 160240, type: "PN", nom: "PN 43" },
+        {
+          pk: 161100,
+          type: "SIGNAL_CS",
+          nom: "Carré 151 TSCS (CS)",
+          track: "CS",
+        },
+        { pk: 161120, type: "SIGNAL", nom: "Carré 153", track: "NORMAL" },
+        { pk: 162300, type: "GARE", nom: "ST PIERRE D'ALBIGNY" },
+        {
+          pk: 162500,
+          type: "SIGNAL_CS",
+          nom: "Carré 161 V2 Ban (CS)",
+          track: "CS",
+        },
+        { pk: 162580, type: "SIGNAL", nom: "Carré 163", track: "NORMAL" },
+        { pk: 163900, type: "SIGNAL", nom: "Carré 173", track: "NORMAL" },
+        {
+          pk: 163900,
+          type: "SIGNAL_CS",
+          nom: "Carré 171 V2 Ban TECS (CS)",
+          track: "CS",
+        },
+        { pk: 165800, type: "SIGNAL", nom: "Carré", track: "NORMAL" },
+        { pk: 166200, type: "TUNNEL_DEB", nom: "Tunnel Chamousset" },
+        { pk: 166400, type: "TUNNEL_FIN", nom: "Chamousset" },
+        { pk: 166761, type: "PN", nom: "PN 46" },
+        { pk: 166900, type: "GARE", nom: "Chamousset", _custom: true },
+        { pk: 167100, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 168200, type: "SIGNAL_CS", nom: "Carré (CS)", track: "CS" },
+        { pk: 168270, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 169226, type: "PN", nom: "PN 47" },
+        { pk: 170680, type: "SIGNAL", nom: "Nf 170,6", track: "NORMAL" },
+        { pk: 170721, type: "PN", nom: "PN 48" },
+        { pk: 172800, type: "SIGNAL", nom: "Carré 172,8", track: "NORMAL" },
+        { pk: 172800, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 172912, type: "PN", nom: "PN 49" },
+        {
+          pk: 174500,
+          type: "SIGNAL_CS",
+          nom: "Carré 203 TECS/TSCS (CS)",
+          track: "CS",
+        },
+        { pk: 174545, type: "SIGNAL", nom: "Carré 201", track: "NORMAL" },
+        { pk: 175198, type: "GARE", nom: "AIGUEBELLE" },
+        { pk: 176215, type: "SIGNAL", nom: "Carré", track: "NORMAL" },
+        { pk: 177283, type: "PN", nom: "PN 53" },
+        { pk: 178700, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 179010, type: "PN", nom: "PN 55" },
+        { pk: 179600, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 180284, type: "PN", nom: "PN 56" },
+        { pk: 180800, type: "SIGNAL_CS", nom: "Carré (CS)", track: "CS" },
+        { pk: 180850, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 181860, type: "PN", nom: "PN 57" },
+        { pk: 183270, type: "SIGNAL", nom: "Carré 291", track: "NORMAL" },
+        { pk: 183819, type: "PN", nom: "PN 58" },
+        { pk: 184400, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 185364, type: "GARE", nom: "EPIERRE" },
+        { pk: 185500, type: "SIGNAL", nom: "Carré 301", track: "NORMAL" },
+        {
+          pk: 185500,
+          type: "SIGNAL_CS",
+          nom: "Carré 303 ⚠️V2bis INT (CS)",
+          track: "CS",
+        },
+        { pk: 186770, type: "SIGNAL", nom: "Carré 311", track: "NORMAL" },
+        { pk: 189150, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 189200, type: "TUNNEL_DEB", nom: "Tunnel La Chapelle" },
+        { pk: 189500, type: "TUNNEL_FIN", nom: "La Chapelle" },
+        { pk: 191280, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 192111, type: "PN", nom: "PN 60" },
+        { pk: 193100, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 193270, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 194200, type: "SIGNAL_CS", nom: "Carré (CS)", track: "CS" },
+        { pk: 195250, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 195700, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        {
+          pk: 197100,
+          type: "SIGNAL_CS",
+          nom: "Carré 2401 TECS (CS)",
+          track: "CS",
+        },
+        { pk: 197150, type: "SIGNAL", nom: "Carré 2403", track: "NORMAL" },
+        { pk: 198080, type: "GARE", nom: "ST AVRE LA CHAMBRE" },
+        { pk: 198400, type: "SIGNAL_CS", nom: "Carré 2405 (CS)", track: "CS" },
+        { pk: 198540, type: "SIGNAL", nom: "Carré 2407", track: "NORMAL" },
+        { pk: 199300, type: "SIGNAL_CS", nom: "Carré 2457 (CS)", track: "CS" },
+        {
+          pk: 199720,
+          type: "SIGNAL",
+          nom: "C 2461 V1bis / C 2459 V1",
+          track: "NORMAL",
+        },
+        { pk: 200300, type: "SIGNAL", nom: "Carré", track: "NORMAL" },
+        { pk: 200300, type: "SIGNAL_CS", nom: "Carré (CS)", track: "CS" },
+        {
+          pk: 201400,
+          type: "VITESSE",
+          nom: "Exécution 90",
+          limits: { ME100: 90, MA100: 90, MA90: 80, MA80: 70 },
+        },
+        { pk: 201700, type: "TUNNEL_DEB", nom: "Tunnel Madeleine" },
+        { pk: 202100, type: "TUNNEL_FIN", nom: "Madeleine" },
+        { pk: 202500, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 202500, type: "SIGNAL_CS", nom: "F (CS)", track: "CS" },
+        { pk: 204000, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 204100, type: "SIGNAL_CS", nom: "F (CS)", track: "CS" },
+        { pk: 205600, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 205600, type: "SIGNAL_CS", nom: "Carré 2501 (CS)", track: "CS" },
+        {
+          pk: 206500,
+          type: "VITESSE",
+          nom: "Exécution 60",
+          limits: { ME100: 60, MA100: 60, MA90: 60, MA80: 50 },
+        },
+        { pk: 206900, type: "TUNNEL_DEB", nom: "Viaduc Longefan" },
+        { pk: 207000, type: "TUNNEL_FIN", nom: "Viaduc" },
+        { pk: 207200, type: "SIGNAL", nom: "Carré 2603", track: "NORMAL" },
+        { pk: 208000, type: "GARE", nom: "ST JEAN DE MAURIENNE" },
+        { pk: 208150, type: "SIGNAL_CS", nom: "Carré 2611 (CS)", track: "CS" },
+        { pk: 208160, type: "SIGNAL", nom: "Carré 2613", track: "NORMAL" },
+        { pk: 208900, type: "SIGNAL", nom: "Carré 2641 TECS", track: "NORMAL" },
+        {
+          pk: 208900,
+          type: "SIGNAL_CS",
+          nom: "Carré 2639 TECS (CS)",
+          track: "CS",
+        },
+        { pk: 210500, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 211000, type: "TUNNEL_DEB", nom: "Tunnel Villargondran" },
+        { pk: 211100, type: "TUNNEL_FIN", nom: "Villargondran" },
+        { pk: 211400, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        {
+          pk: 211600,
+          type: "VITESSE",
+          nom: "Reprise 100",
+          limits: { ME100: 100, MA100: 100, MA90: 90, MA80: 80 },
+        },
+        { pk: 211900, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 212400, type: "SIGNAL_CS", nom: "Carré (CS)", track: "CS" },
+        { pk: 212700, type: "TUNNEL_DEB", nom: "Tunnel St Julien" },
+        { pk: 213100, type: "TUNNEL_FIN", nom: "St Julien" },
+        { pk: 213200, type: "SIGNAL", nom: "Carré 1", track: "NORMAL" },
+        { pk: 214600, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 214600, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 216000, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 216000, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 216400, type: "TUNNEL_DEB", nom: "Tunnel St Martin" },
+        { pk: 216700, type: "TUNNEL_FIN", nom: "St Martin" },
+        { pk: 217600, type: "SIGNAL", nom: "Carré", track: "NORMAL" },
+        { pk: 218200, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 219300, type: "SIGNAL", nom: "Carré 253", track: "NORMAL" },
+        {
+          pk: 219300,
+          type: "SIGNAL_CS",
+          nom: "Carré 251 TSCS (CS)",
+          track: "CS",
+        },
+        { pk: 220360, type: "GARE", nom: "ST MICHEL VALLOIRE" },
+      ];
+
+      // ============================================================
+      // DONNÉES : MODANE → CHAMBERY (sens PAIR)
+      // ============================================================
+      let dataPairBase = [
+        { pk: 220360, type: "GARE", nom: "ST MICHEL VALLOIRE" },
+        {
+          pk: 220000,
+          type: "SIGNAL",
+          nom: "C 260 VA / C 262 V2 TECS",
+          track: "NORMAL",
+        },
+        { pk: 219000, type: "SIGNAL", nom: "Carré", track: "NORMAL" },
+        { pk: 218000, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 217500, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 216900, type: "SIGNAL_CS", nom: "C (CS)", track: "CS" },
+        { pk: 216700, type: "TUNNEL_DEB", nom: "Tunnel St Martin" },
+        { pk: 216400, type: "TUNNEL_FIN", nom: "St Martin" },
+        { pk: 215700, type: "SIGNAL", nom: "C 2", track: "NORMAL" },
+        { pk: 214900, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 214200, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 213600, type: "SIGNAL_CS", nom: "C (CS)", track: "CS" },
+        { pk: 213100, type: "TUNNEL_DEB", nom: "Tunnel St Julien" },
+        { pk: 212700, type: "TUNNEL_FIN", nom: "St Julien" },
+        { pk: 211200, type: "SIGNAL", nom: "C 2652", track: "NORMAL" },
+        { pk: 211200, type: "SIGNAL_CS", nom: "C 2654 TSCS (CS)", track: "CS" },
+        { pk: 211100, type: "TUNNEL_DEB", nom: "Tunnel Villargondran" },
+        { pk: 211000, type: "TUNNEL_FIN", nom: "Villargondran" },
+        { pk: 209800, type: "SIGNAL", nom: "C 2642", track: "NORMAL" },
+        { pk: 209800, type: "SIGNAL_CS", nom: "C 2644 (CS)", track: "CS" },
+        { pk: 208700, type: "SIGNAL", nom: "C 2626", track: "NORMAL" },
+        { pk: 208700, type: "SIGNAL_CS", nom: "C 2628 (CS)", track: "CS" },
+        { pk: 208088, type: "GARE", nom: "ST JEAN DE MAURIENNE" },
+        { pk: 207928, type: "SIGNAL", nom: "C 2602", track: "NORMAL" },
+        { pk: 207928, type: "SIGNAL_CS", nom: "C 2604 (CS)", track: "CS" },
+        { pk: 207000, type: "TUNNEL_DEB", nom: "Viaduc Longefan" },
+        { pk: 206900, type: "TUNNEL_FIN", nom: "Viaduc" },
+        { pk: 206300, type: "SIGNAL", nom: "C 2504", track: "NORMAL" },
+        { pk: 206300, type: "SIGNAL_CS", nom: "C (CS)", track: "CS" },
+        { pk: 204700, type: "SIGNAL", nom: "Carré", track: "NORMAL" },
+        { pk: 204700, type: "SIGNAL_CS", nom: "C (CS)", track: "CS" },
+        { pk: 202400, type: "SIGNAL", nom: "C 2470", track: "NORMAL" },
+        { pk: 202400, type: "SIGNAL_CS", nom: "C 2472 (CS)", track: "CS" },
+        { pk: 202100, type: "TUNNEL_DEB", nom: "Tunnel Madeleine" },
+        { pk: 201700, type: "TUNNEL_FIN", nom: "Madeleine" },
+        { pk: 200300, type: "SIGNAL", nom: "C 2462", track: "NORMAL" },
+        { pk: 200300, type: "SIGNAL_CS", nom: "C 2464 (CS)", track: "CS" },
+        { pk: 199100, type: "SIGNAL", nom: "C 2412", track: "NORMAL" },
+        {
+          pk: 199100,
+          type: "SIGNAL_CS",
+          nom: "C 2414 V1 / C 416 V1bis (CS)",
+          track: "CS",
+        },
+        { pk: 198080, type: "GARE", nom: "ST AVRE LA CHAMBRE" },
+        { pk: 197956, type: "SIGNAL_CS", nom: "C 2434 TECS (CS)", track: "CS" },
+        { pk: 197700, type: "SIGNAL", nom: "C 2432 TECS", track: "NORMAL" },
+        { pk: 194850, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 192500, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 192320, type: "SIGNAL", nom: "Carré", track: "NORMAL" },
+        { pk: 192111, type: "PN", nom: "PN 60" },
+        { pk: 191300, type: "SIGNAL_CS", nom: "C (CS)", track: "CS" },
+        { pk: 189700, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 189500, type: "TUNNEL_DEB", nom: "Tunnel La Chapelle" },
+        { pk: 189200, type: "TUNNEL_FIN", nom: "La Chapelle" },
+        { pk: 188400, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 187100, type: "SIGNAL", nom: "C 312", track: "NORMAL" },
+        { pk: 187100, type: "SIGNAL_CS", nom: "C 314 TSCS (CS)", track: "CS" },
+        {
+          pk: 186000,
+          type: "SIGNAL_CS",
+          nom: "C 306 V1 / C 308 V1bis TECS (CS)",
+          track: "CS",
+        },
+        { pk: 185364, type: "GARE", nom: "EPIERRE" },
+        { pk: 184620, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 183819, type: "PN", nom: "PN 58" },
+        { pk: 182200, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 181860, type: "PN", nom: "PN 57" },
+        { pk: 181000, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 180300, type: "PN", nom: "PN 56" },
+        { pk: 179800, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 179700, type: "SIGNAL_CS", nom: "C (CS)", track: "CS" },
+        { pk: 179000, type: "PN", nom: "PN 55" },
+        { pk: 177283, type: "PN", nom: "PN 53" },
+        { pk: 177200, type: "SIGNAL", nom: "Carré", track: "NORMAL" },
+        { pk: 176300, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 175198, type: "GARE", nom: "AIGUEBELLE" },
+        { pk: 175070, type: "SIGNAL", nom: "C 202 TECS", track: "NORMAL" },
+        {
+          pk: 175070,
+          type: "SIGNAL_CS",
+          nom: "C 204 TSCS/TECS (CS)",
+          track: "CS",
+        },
+        { pk: 173430, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 172912, type: "PN", nom: "PN 49" },
+        { pk: 171230, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 170721, type: "PN", nom: "PN 48" },
+        { pk: 169500, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 169300, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 169226, type: "PN", nom: "PN 47" },
+        { pk: 168200, type: "SIGNAL_CS", nom: "C (CS)", track: "CS" },
+        { pk: 167150, type: "GARE", nom: "CHAMOUSSET" },
+        { pk: 166882, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 166761, type: "PN", nom: "PN 46" },
+        { pk: 166400, type: "TUNNEL_DEB", nom: "Tunnel Chamousset" },
+        { pk: 166200, type: "TUNNEL_FIN", nom: "Chamousset" },
+        { pk: 165700, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 164500, type: "SIGNAL_CS", nom: "C 176 TSCS (CS)", track: "CS" },
+        { pk: 164470, type: "SIGNAL", nom: "C 174", track: "NORMAL" },
+        { pk: 163100, type: "SIGNAL_CS", nom: "C 166 (CS)", track: "CS" },
+        { pk: 163030, type: "SIGNAL", nom: "C 164", track: "NORMAL" },
+        { pk: 162420, type: "GARE", nom: "ST PIERRE D'ALBIGNY" },
+        {
+          pk: 161700,
+          type: "SIGNAL",
+          nom: "C 152 V4 / C 154 V2 TECS",
+          track: "NORMAL",
+        },
+        { pk: 161700, type: "SIGNAL_CS", nom: "C 156 TECS (CS)", track: "CS" },
+        { pk: 160200, type: "PN", nom: "PN 43" },
+        { pk: 160054, type: "PN", nom: "PN 42" },
+        { pk: 159880, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 158350, type: "SIGNAL", nom: "Carré", track: "NORMAL" },
+        { pk: 157480, type: "PN", nom: "PN 41" },
+        { pk: 157400, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 157215, type: "INFO", nom: "DBC", _custom: true },
+        { pk: 156820, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 156200, type: "TUNNEL_FIN", nom: "Galerie du record" },
+        { pk: 156100, type: "SIGNAL_CS", nom: "C (CS)", track: "CS" },
+        { pk: 156050, type: "TUNNEL_DEB", nom: "Galerie du record" },
+        { pk: 155120, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 154860, type: "PN", nom: "PN 39" },
+        { pk: 153545, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 153500, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 152200, type: "SIGNAL", nom: "C 26", track: "NORMAL" },
+        { pk: 152200, type: "SIGNAL_CS", nom: "C 128 TSCS (CS)", track: "CS" },
+        { pk: 150900, type: "GARE", nom: "MONTMELIAN" },
+        { pk: 150790, type: "SIGNAL", nom: "C 106 TECS", track: "NORMAL" },
+        { pk: 150764, type: "SIGNAL_CS", nom: "C 108 TECS (CS)", track: "CS" },
+        { pk: 149270, type: "PN", nom: "PN 37" },
+        { pk: 149200, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 148510, type: "PN", nom: "PN 36" },
+        { pk: 147000, type: "SIGNAL", nom: "Carré", track: "NORMAL" },
+        { pk: 146500, type: "PN", nom: "PN 34" },
+        { pk: 145600, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 144900, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 143700, type: "SIGNAL", nom: "C 12 TECS", track: "NORMAL" },
+        {
+          pk: 143700,
+          type: "SIGNAL_CS",
+          nom: "C 14 TSCS/TECS (CS)",
+          track: "CS",
+        },
+        { pk: 142070, type: "PN", nom: "PN 32" },
+        { pk: 142000, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 141330, type: "PN", nom: "PN 31" },
+        { pk: 140100, type: "SIGNAL", nom: "C 368", track: "NORMAL" },
+        { pk: 139583, type: "VITESSE", nom: "TIV pointe", _custom: true },
+        { pk: 139500, type: "SIGNAL_CS", nom: "A (CS)", track: "CS" },
+        { pk: 138600, type: "SIGNAL", nom: "C 366", track: "NORMAL" },
+        { pk: 138364, type: "SIGNAL_CS", nom: "C 364 TSCS (CS)", track: "CS" },
+        { pk: 138200, type: "PN", nom: "PN 27" },
+        { pk: 138100, type: "SIGNAL", nom: "C 362", _custom: true },
+        { pk: 137600, type: "GARE", nom: "CHAMBERY" },
+      ];
+
+      // ============================================================
+      // DONNÉES : CHAMBERY → AMBERIEU (sens PAIR, PK décroissant)
+      // ============================================================
+      let dataChamberyAmberieuPair = [
+        { pk: 137600, type: "GARE", nom: "CHAMBERY" },
+        {
+          pk: 137600,
+          type: "VITESSE",
+          nom: "100",
+          limits: { ME100: 100, MA100: 90, MA90: 90, MA80: 80 },
+        },
+        { pk: 137180, type: "SIGNAL", nom: "Nf", _custom: true },
+        { pk: 137000, type: "SIGNAL", nom: "Nf", _custom: true },
+        { pk: 136200, type: "PN", nom: "PN non gardé", _custom: true },
+        { pk: 135750, type: "PN", nom: "PN 24a", track: "NORMAL" },
+        { pk: 135500, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 134300, type: "PN", nom: "PN 24" },
+        { pk: 133700, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 133600, type: "SIGNAL_CS", nom: "A 133,6", track: "CS" },
+        { pk: 133100, type: "PN", nom: "PN 23" },
+        { pk: 132100, type: "INFO", nom: "TIV Pointe", _custom: true },
+        { pk: 132000, type: "SIGNAL", nom: "Nf 150", track: "NORMAL" },
+        { pk: 132000, type: "SIGNAL_CS", nom: "Nf 132", track: "CS" },
+        { pk: 130800, type: "GARE", nom: "VOGLANS" },
+        { pk: 130200, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 128320, type: "GARE", nom: "VIVIERS DU LAC" },
+        { pk: 128200, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 126850, type: "SIGNAL", nom: "F 126,8", track: "NORMAL" },
+        { pk: 126800, type: "SIGNAL_CS", nom: "A 126,8", track: "CS" },
+        { pk: 125500, type: "SIGNAL", nom: "Nf 534", track: "NORMAL" },
+        { pk: 125500, type: "SIGNAL_CS", nom: "Nf 536 TSCS", track: "CS" },
+        {
+          pk: 124380,
+          type: "VITESSE",
+          nom: "80",
+          limits: { ME100: 80, MA100: 80, MA90: 80, MA80: 80 },
+        },
+        { pk: 124200, type: "SIGNAL", nom: "Nf 524 / Nf 526", track: "NORMAL" },
+        { pk: 124200, type: "SIGNAL_CS", nom: "Nf 528", track: "CS" },
+        { pk: 123900, type: "PN", nom: "PN 15" },
+        { pk: 123600, type: "GARE", nom: "AIX LES BAINS" },
+        { pk: 123450, type: "SIGNAL", nom: "Nf + TECS + ID", track: "NORMAL" },
+        { pk: 123300, type: "SIGNAL_CS", nom: "Nf 434 TECS", track: "CS" },
+        {
+          pk: 123100,
+          type: "SIGNAL",
+          nom: "Nf 412 (V2) / Nf 408 (VC)",
+          track: "NORMAL",
+        },
+        {
+          pk: 122800,
+          type: "VITESSE",
+          nom: "100",
+          limits: { ME100: 100, MA100: 100, MA90: 80, MA80: 80 },
+        },
+        { pk: 122500, type: "PN", nom: "PN 13" },
+        { pk: 122050, type: "PN", nom: "PN 12" },
+        { pk: 121320, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 121270, type: "PN", nom: "PN 11" },
+        { pk: 120800, type: "PN", nom: "PN 10" },
+        { pk: 119700, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        {
+          pk: 118176,
+          type: "VITESSE",
+          nom: "Zone 80",
+          limits: { ME100: 80, MA100: 80, MA90: 80, MA80: 80 },
+          _custom: true,
+        },
+        { pk: 118050, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 116600, type: "SIGNAL", nom: "Nf 116,6", track: "NORMAL" },
+        {
+          pk: 116500,
+          type: "VITESSE",
+          nom: "Zone 100",
+          limits: { ME100: 100, MA100: 100, MA90: 100, MA80: 80 },
+          _custom: true,
+        },
+        { pk: 116400, type: "TUNNEL_FIN", nom: "Colombière" },
+        { pk: 115200, type: "TUNNEL_DEB", nom: "Tunnel de la Colombière" },
+        { pk: 114776, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 114610, type: "PN", nom: "PN 7" },
+        { pk: 114000, type: "PN", nom: "PN 6" },
+        { pk: 113900, type: "TUNNEL_FIN", nom: "Brison" },
+        { pk: 113500, type: "TUNNEL_DEB", nom: "Tunnel de Brison" },
+        { pk: 113400, type: "PN", nom: "PN 5" },
+        { pk: 113100, type: "SIGNAL", nom: "Nf 113,1", track: "NORMAL" },
+        { pk: 112500, type: "TUNNEL_FIN", nom: "Galerie du Grand Rocher" },
+        { pk: 112000, type: "TUNNEL_DEB", nom: "Galerie du Grand Rocher" },
+        { pk: 111600, type: "SIGNAL", nom: "Nf 111,6", track: "NORMAL" },
+        { pk: 111600, type: "SIGNAL_CS", nom: "A 111,6", track: "CS" },
+        { pk: 111500, type: "PN", nom: "PN 4" },
+        { pk: 110200, type: "SIGNAL", nom: "Nf 302", track: "NORMAL" },
+        { pk: 110200, type: "SIGNAL_CS", nom: "Nf 304", track: "CS" },
+        { pk: 108300, type: "GARE", nom: "CHINDRIEUX" },
+        { pk: 108200, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 106500, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 105000, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 104200, type: "PN", nom: "PN 2" },
+        { pk: 103600, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        {
+          pk: 103100,
+          type: "VITESSE",
+          nom: "80",
+          limits: { ME100: 80, MA100: 80, MA90: 80, MA80: 80 },
+        },
+        {
+          pk: 102100,
+          type: "SIGNAL",
+          nom: "Nf 314 + ID 1 feu",
+          track: "NORMAL",
+        },
+        { pk: 102100, type: "SIGNAL_CS", nom: "Nf 316", track: "CS" },
+        { pk: 101800, type: "PN", nom: "PN 1" },
+        { pk: 101300, type: "GARE", nom: "CULOZ" },
+        { pk: 101000, type: "SIGNAL", nom: "Nf + TECS", track: "NORMAL" },
+        {
+          pk: 100800,
+          type: "VITESSE",
+          nom: "100",
+          limits: { ME100: 100, MA100: 100, MA90: 90, MA80: 80 },
+        },
+        {
+          pk: 99800,
+          type: "SIGNAL",
+          nom: "Nf 106/108 + TECS",
+          track: "NORMAL",
+        },
+        { pk: 99050, type: "PN", nom: "PN 61" },
+        { pk: 98150, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 96650, type: "PN", nom: "PN 60" },
+        { pk: 96330, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 94100, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 92080, type: "SIGNAL", nom: "Nf", track: "NORMAL" },
+        {
+          pk: 90500,
+          type: "VITESSE",
+          nom: "90",
+          limits: { ME100: 90, MA100: 90, MA90: 90, MA80: 80 },
+        },
+        { pk: 89842, type: "SIGNAL", nom: "Nf", _custom: true },
+        { pk: 89800, type: "GARE", nom: "VIRIEU LE GRAND" },
+        { pk: 88317, type: "SIGNAL", nom: "Nf", _custom: true },
+        { pk: 87286, type: "SIGNAL", nom: "Nf", _custom: true },
+        { pk: 87200, type: "TUNNEL_FIN", nom: "Pugieu" },
+        { pk: 86400, type: "TUNNEL_DEB", nom: "Tunnel de Pugieu" },
+        { pk: 85620, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 84300, type: "SIGNAL", nom: "Nf 84,3", track: "NORMAL" },
+        { pk: 83100, type: "GARE", nom: "ROSSILLON" },
+        { pk: 83000, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 81550, type: "SIGNAL", nom: "Nf", track: "NORMAL" },
+        { pk: 79834, type: "SIGNAL", nom: "Nf", _custom: true },
+        { pk: 79780, type: "PN", nom: "PN 52" },
+        { pk: 78120, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 76300, type: "SIGNAL", nom: "Nf 602", track: "NORMAL" },
+        { pk: 76220, type: "PN", nom: "PN 50" },
+        { pk: 75000, type: "SIGNAL", nom: "Nf", _custom: true },
+        { pk: 73070, type: "SIGNAL", nom: "Nf", _custom: true },
+        { pk: 71500, type: "PN", nom: "PN 48" },
+        { pk: 71380, type: "SIGNAL", nom: "C1", _custom: true },
+        { pk: 69470, type: "GARE", nom: "TENAY HAUTEVILLE" },
+        { pk: 69327, type: "SIGNAL", nom: "C2", _custom: true },
+        { pk: 67840, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 66374, type: "SIGNAL", nom: "F", _custom: true },
+        { pk: 64600, type: "SIGNAL", nom: "Nf 502", track: "NORMAL" },
+        { pk: 62700, type: "GARE", nom: "ST RAMBERT EN BUGEY" },
+        { pk: 62520, type: "SIGNAL", nom: "F", _custom: true },
+        { pk: 62400, type: "PN", nom: "PN 43" },
+        {
+          pk: 61800,
+          type: "VITESSE",
+          nom: "100",
+          limits: { ME100: 100, MA100: 100, MA90: 90, MA80: 80 },
+        },
+        { pk: 60600, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 59150, type: "PN", nom: "PN 41" },
+        { pk: 58800, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 57200, type: "PN", nom: "PN 40" },
+        { pk: 56150, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 54100, type: "SIGNAL", nom: "Nf 406", track: "NORMAL" },
+        { pk: 53600, type: "INFO", nom: "TIV Pointe", _custom: true },
+        { pk: 53170, type: "SIGNAL", nom: "Nf 11", track: "NORMAL" },
+        { pk: 52100, type: "SIGNAL", nom: "Nf 60", track: "NORMAL" },
+        { pk: 51400, type: "GARE", nom: "AMBERIEU" },
+      ];
+
+      // ============================================================
+      // DONNÉES : AMBERIEU → CHAMBERY (sens IMPAIR, PK croissant)
+      // ============================================================
+      let dataChamberyAmberieuImpair = [
+        { pk: 51400, type: "GARE", nom: "AMBERIEU" },
+        { pk: 51800, type: "SIGNAL", nom: "Nf", track: "NORMAL" },
+        { pk: 52100, type: "SIGNAL", nom: "Nf", track: "NORMAL" },
+        {
+          pk: 53000,
+          type: "VITESSE",
+          nom: "100",
+          limits: { ME100: 100, MA100: 100, MA90: 90, MA80: 80 },
+        },
+        {
+          pk: 53450,
+          type: "SIGNAL",
+          nom: "Nf 403 + GIVRE + TIV 90",
+          track: "NORMAL",
+        },
+        { pk: 55360, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 57100, type: "SIGNAL", nom: "F", _custom: true },
+        { pk: 57200, type: "PN", nom: "PN 40" },
+        { pk: 59100, type: "SIGNAL", nom: "Nf 59,1", track: "NORMAL" },
+        { pk: 59100, type: "PN", nom: "PN 41" },
+        { pk: 60710, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 61450, type: "INFO", nom: "DBC", _custom: true },
+        { pk: 62370, type: "PN", nom: "PN 43" },
+        {
+          pk: 62600,
+          type: "VITESSE",
+          nom: "90",
+          limits: { ME100: 90, MA100: 90, MA90: 90, MA80: 80 },
+        },
+        { pk: 62700, type: "GARE", nom: "ST RAMBERT EN BUGEY" },
+        { pk: 62700, type: "SIGNAL", nom: "F", _custom: true },
+        { pk: 63800, type: "SIGNAL", nom: "Nf 503 TECS", track: "NORMAL" },
+        { pk: 64900, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 66550, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 68050, type: "SIGNAL", nom: "Nf 14", track: "NORMAL" },
+        { pk: 69300, type: "GARE", nom: "TENAY HAUTEVILLE" },
+        { pk: 69780, type: "SIGNAL", nom: "Nf 11 (V1)", track: "NORMAL" },
+        { pk: 71400, type: "SIGNAL", nom: "Nf 71.4", track: "NORMAL" },
+        { pk: 71450, type: "PN", nom: "PN 48" },
+        { pk: 73100, type: "SIGNAL", nom: "Nf 73,1", track: "NORMAL" },
+        { pk: 75300, type: "SIGNAL", nom: "Nf 603 + TECS 90", track: "NORMAL" },
+        { pk: 76220, type: "PN", nom: "PN 50" },
+        { pk: 77500, type: "SIGNAL", nom: "Nf 77.5", track: "NORMAL" },
+        { pk: 79600, type: "SIGNAL", nom: "Nf 79.6", track: "NORMAL" },
+        { pk: 79780, type: "PN", nom: "PN 52" },
+        { pk: 81500, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 83100, type: "GARE", nom: "ROSSILLON" },
+        { pk: 83300, type: "SIGNAL", nom: "Nf 83,3", track: "NORMAL" },
+        { pk: 85320, type: "SIGNAL", nom: "Nf 85,3", track: "NORMAL" },
+        { pk: 86400, type: "TUNNEL_FIN", nom: "Pugieu" },
+        {
+          pk: 86400,
+          type: "TUNNEL_DEB",
+          nom: "Tunnel de Pugieu",
+          _custom: true,
+        },
+        { pk: 87200, type: "TUNNEL_DEB", nom: "Tunnel de Pugieu" },
+        {
+          pk: 87200,
+          type: "TUNNEL_FIN",
+          nom: "Tunnel de Pugieu",
+          _custom: true,
+        },
+        { pk: 87330, type: "SIGNAL", nom: "Nf 87,3", track: "NORMAL" },
+        { pk: 88900, type: "SIGNAL", nom: "Nf 703 + TECS 90", track: "NORMAL" },
+        { pk: 89800, type: "GARE", nom: "VIRIEU LE GRAND" },
+        { pk: 90800, type: "SIGNAL", nom: "Nf", _custom: true },
+        {
+          pk: 91000,
+          type: "VITESSE",
+          nom: "100",
+          limits: { ME100: 100, MA100: 100, MA90: 90, MA80: 80 },
+        },
+        { pk: 91200, type: "INFO", nom: "S", _custom: true },
+        { pk: 92730, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 93180, type: "INFO", nom: "DBC", _custom: true },
+        { pk: 95100, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 96600, type: "PN", nom: "PN 60" },
+        { pk: 97000, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 99000, type: "SIGNAL", nom: "Nf 103 TIDD", track: "NORMAL" },
+        { pk: 99100, type: "PN", nom: "PN 61" },
+        { pk: 99300, type: "INFO", nom: "TIV Pointe 80", _custom: true },
+        {
+          pk: 99800,
+          type: "VITESSE",
+          nom: "80",
+          limits: { ME100: 80, MA100: 80, MA90: 80, MA80: 80 },
+        },
+        {
+          pk: 100500,
+          type: "SIGNAL",
+          nom: "Nf 205 ID 2 feux",
+          track: "NORMAL",
+        },
+        { pk: 101300, type: "GARE", nom: "CULOZ" },
+        {
+          pk: 101690,
+          type: "SIGNAL",
+          nom: "Nf 301/307 TECS TIDD",
+          track: "NORMAL",
+        },
+        { pk: 101830, type: "PN", nom: "PN 1" },
+        {
+          pk: 102100,
+          type: "VITESSE",
+          nom: "100",
+          limits: { ME100: 100, MA100: 100, MA90: 90, MA80: 80 },
+        },
+        { pk: 103050, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 104380, type: "PN", nom: "PN 2" },
+        { pk: 104500, type: "GARE", nom: "VIONZ CHANAZ" },
+        { pk: 104575, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 106300, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 108120, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 108300, type: "GARE", nom: "CHINDRIEUX" },
+        { pk: 109800, type: "SIGNAL", nom: "Nf 301 + TECS", track: "NORMAL" },
+        { pk: 111200, type: "SIGNAL", nom: "Nf 111,2", track: "NORMAL" },
+        { pk: 111400, type: "PN", nom: "PN 4" },
+        { pk: 112000, type: "TUNNEL_DEB", nom: "Galerie du Grand Rocher" },
+        { pk: 112500, type: "TUNNEL_FIN", nom: "Galerie du Grand Rocher" },
+        { pk: 113100, type: "SIGNAL", nom: "Nf 113", track: "NORMAL" },
+        { pk: 113400, type: "PN", nom: "PN 5" },
+        { pk: 113500, type: "TUNNEL_FIN", nom: "Brison" },
+        {
+          pk: 113500,
+          type: "TUNNEL_DEB",
+          nom: "Tunnel de Brison",
+          _custom: true,
+        },
+        { pk: 113900, type: "TUNNEL_DEB", nom: "Tunnel de Brison" },
+        {
+          pk: 113900,
+          type: "TUNNEL_FIN",
+          nom: "Tunnel de Brison",
+          _custom: true,
+        },
+        { pk: 114000, type: "PN", nom: "PN 6" },
+        { pk: 114610, type: "PN", nom: "PN 7" },
+        { pk: 114740, type: "SIGNAL", nom: "Nf 114,7", track: "NORMAL" },
+        { pk: 115200, type: "TUNNEL_DEB", nom: "Tunnel de la Colombière" },
+        { pk: 116400, type: "TUNNEL_FIN", nom: "Colombière" },
+        {
+          pk: 116400,
+          type: "VITESSE",
+          nom: "80",
+          limits: { ME100: 80, MA100: 80, MA90: 80, MA80: 80 },
+        },
+        { pk: 116600, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        {
+          pk: 118300,
+          type: "VITESSE",
+          nom: "100",
+          limits: { ME100: 100, MA100: 100, MA90: 90, MA80: 80 },
+        },
+        { pk: 118400, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 119700, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 120750, type: "PN", nom: "PN 10" },
+        { pk: 121200, type: "SIGNAL", nom: "Nf 401", track: "NORMAL" },
+        { pk: 121280, type: "PN", nom: "PN 11" },
+        { pk: 122000, type: "PN", nom: "PN 12" },
+        { pk: 122500, type: "PN", nom: "PN 13" },
+        { pk: 122900, type: "SIGNAL", nom: "Nf 407", track: "NORMAL" },
+        {
+          pk: 123000,
+          type: "VITESSE",
+          nom: "80",
+          limits: { ME100: 80, MA100: 80, MA90: 80, MA80: 80 },
+        },
+        { pk: 123600, type: "GARE", nom: "AIX LES BAINS" },
+        {
+          pk: 123800,
+          type: "SIGNAL",
+          nom: "Nf 511/509/507/505/503",
+          track: "NORMAL",
+        },
+        { pk: 123900, type: "PN", nom: "PN 15" },
+        {
+          pk: 124380,
+          type: "VITESSE",
+          nom: "100",
+          limits: { ME100: 100, MA100: 100, MA90: 90, MA80: 80 },
+        },
+        { pk: 125000, type: "SIGNAL", nom: "Nf 535/533/531", track: "NORMAL" },
+        { pk: 126300, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 128200, type: "GARE", nom: "VIVIERS DU LAC" },
+        { pk: 128400, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 130400, type: "SIGNAL", nom: "Nf 101", track: "NORMAL" },
+        { pk: 131900, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 133600, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 134300, type: "PN", nom: "PN 24" },
+        { pk: 135100, type: "SIGNAL", nom: "F", track: "NORMAL" },
+        { pk: 136450, type: "SIGNAL", nom: "Nf 107", track: "NORMAL" },
+        { pk: 137000, type: "SIGNAL", nom: "Nf 205", track: "NORMAL" },
+        { pk: 137600, type: "GARE", nom: "CHAMBERY" },
+      ];
+
+      // ============================================================
+      // RT 5077 — ALV/PBM — Albertville → Pomblière St Marcel
+      // Source exacte : PDF CODELI RT5077_04 + notes conducteur
+      // Vitesses ligne banalisée : ME100/HLP = 80, MA100 = 70
+      // Zones gare signalées par signaux terrain : pas de hachurages rouges
+      // Direction IMPAIR, PK locaux (0 = Bif StPierre à PK 162,381)
+      // NOTA: PK sur cette ligne = distance depuis Albertville (PK 23,625 ligne principale)
+      // Les PK locaux ici sont ceux du CODELI (PK depuis Albertville)
+      // ============================================================
+
+      // SENS ALLER : Albertville (PK 23,625) → Pomblière (PK 57,229)
+      // Direction d'affichage IMPAIR (PK croissant)
+
+      // ============================================================
+      // RT 5077 — BIF_SAINTPIERRE_PBM
+      // St Pierre d'Albigny (PK 0 local / PK 162,381 LGV) → Pomblière (PK 57,229)
+      // via Albertville (PK 23,625)
+      // Source: PDF01 (ALV→SPA), PDF04 (ALV→BSM), images notes conducteur
+      // Vitesses: ME100/HLP=80, MA100=70, MA90=70, MA80=70 (banalisée)
+      // Direction IMPAIR (PK croissant 0→57,229). Pas de zones rouges.
+      // ============================================================
+      // ============================================================
+      // RT 5077 — 4 LIGNES TARENTAISE
+      // PK LOCAUX: 0 = Bif St Pierre / 23,625 = Albertville / 57,229 = PBM
+      //
+      // VITESSES (banalisée):
+      //   SPA→ALV et ALV→SPA :
+      //     ME100/HLP = 80, MA100 = 70, MA90 = 70, MA80 = 70
+      //   ALV→PBM :
+      //     ME100/HLP = 80 jusqu'à AIG (49,473), puis 70
+      //     MA100 = 70 tout le long
+      //   PBM→ALV :
+      //     ME100/HLP = 70 de PBM à MOS (51,659), puis 80 jusqu'à ALV
+      //     MA100 = 70 tout le long
+      // ============================================================
+
+      // ============================================================
+      // LIGNE 1 : SPA_ALV — Bif St Pierre → Albertville
+      // PK locaux 0 → 23,625 (direction IMPAIR, PK croissant)
+      // Source: PDF notes conducteur pages 1 et 2
+      // ============================================================
+      let dataSPA_ALV = [
+        { pk: 0, type: "GARE", nom: "ST PIERRE D'ALBIGNY (Bif)" },
+        { pk: 170, type: "SIGNAL", nom: "Nf", _custom: true },
+        { pk: 1500, type: "SIGNAL", nom: "Nf", _custom: true },
+        { pk: 2800, type: "SIGNAL", nom: "Nf 401" },
+        { pk: 3500, type: "PN", nom: "PN 1" },
+        { pk: 6150, type: "PN", nom: "PN 2" },
+        { pk: 6330, type: "PN", nom: "PN 3" },
+        { pk: 7400, type: "PN", nom: "PN 4" },
+        { pk: 7920, type: "SIGNAL", nom: "A (panneau circulaire)" },
+        { pk: 9000, type: "SIGNAL", nom: "Nf 441" },
+        { pk: 9075, type: "PN", nom: "PN 5" },
+        { pk: 9550, type: "GARE", nom: "GRÉSY-SUR-ISÈRE" },
+        { pk: 9700, type: "SIGNAL", nom: "Nf 455 / Nf 453" },
+        { pk: 9780, type: "PN", nom: "PN 6" },
+        { pk: 12830, type: "PN", nom: "PN 7" },
+        { pk: 13980, type: "PN", nom: "PN 8" },
+        { pk: 14130, type: "SIGNAL", nom: "A (panneau circulaire)" },
+        { pk: 15240, type: "SIGNAL", nom: "Nf 471" },
+        { pk: 15800, type: "GARE", nom: "FRONTENEX" },
+        { pk: 15950, type: "SIGNAL", nom: "Nf 485 / Nf 483" },
+        { pk: 16050, type: "PN", nom: "PN 10" },
+        { pk: 16550, type: "PN", nom: "PN 12" },
+        { pk: 18400, type: "PN", nom: "PN 15" },
+        { pk: 18600, type: "INFO", nom: "S" },
+        { pk: 18890, type: "PN", nom: "PN 16 (non gardé)" },
+        { pk: 20610, type: "PN", nom: "PN 18" },
+        { pk: 21150, type: "SIGNAL", nom: "A (panneau circulaire en vert)" },
+        { pk: 21700, type: "PN", nom: "PN 20" },
+        { pk: 22330, type: "SIGNAL", nom: "Nf 13" },
+        { pk: 22400, type: "PN", nom: "PN 21" },
+        { pk: 23000, type: "SIGNAL", nom: "Nf 15" },
+        { pk: 23100, type: "PN", nom: "PN 23" },
+        { pk: 23625, type: "GARE", nom: "ALBERTVILLE" },
+        { pk: 23800, type: "SIGNAL", nom: "Nf fin de quai" },
+      ];
+
+      // ============================================================
+      // LIGNE 2 : ALV_SPA — Albertville → Bif St Pierre
+      // PK locaux 23,625 → 0 (direction PAIR, PK décroissant)
+      // Source: PDF notes conducteur pages 3 et 4
+      // ============================================================
+      let dataALV_SPA = [
+        { pk: 163100, type: "SIGNAL", nom: "Nf 164 / Nf 166" },
+        { pk: 162300, type: "GARE", nom: "ST PIERRE D'ALBIGNY (Bif)" },
+        { pk: 23550, type: "GARE", nom: "ALBERTVILLE" },
+        { pk: 23350, type: "SIGNAL", nom: "Nf fin de quai — ID 2 feux" },
+        { pk: 23100, type: "PN", nom: "PN 23", _custom: true },
+        { pk: 22400, type: "SIGNAL", nom: "Nf 20" },
+        { pk: 22350, type: "PN", nom: "PN 21" },
+        { pk: 21700, type: "PN", nom: "PN 20" },
+        { pk: 20600, type: "PN", nom: "PN 18" },
+        { pk: 19200, type: "INFO", nom: "S" },
+        { pk: 18890, type: "PN", nom: "PN 16 non gardé", _custom: true },
+        { pk: 18390, type: "PN", nom: "PN 15" },
+        { pk: 17900, type: "SIGNAL", nom: "A (panneau circulaire)" },
+        { pk: 16600, type: "SIGNAL", nom: "Nf 486" },
+        { pk: 16480, type: "PN", nom: "PN 12", _custom: true },
+        { pk: 16000, type: "PN", nom: "PN 10" },
+        { pk: 15880, type: "GARE", nom: "FRONTENEX" },
+        { pk: 15500, type: "SIGNAL", nom: "Nf 472 / Nf 474" },
+        { pk: 14050, type: "PN", nom: "PN 8" },
+        { pk: 12850, type: "PN", nom: "PN 7" },
+        { pk: 11050, type: "SIGNAL", nom: "A (panneau circulaire)" },
+        { pk: 9850, type: "SIGNAL", nom: "Nf 456" },
+        { pk: 9750, type: "PN", nom: "PN 6" },
+        { pk: 9600, type: "GARE", nom: "GRÉSY-SUR-ISÈRE" },
+        { pk: 9210, type: "SIGNAL", nom: "Nf 442 / Nf 444" },
+        { pk: 9100, type: "PN", nom: "PN 5" },
+        { pk: 7400, type: "PN", nom: "PN 4" },
+        { pk: 6350, type: "PN", nom: "PN 3" },
+        { pk: 6175, type: "PN", nom: "PN 2" },
+        { pk: 3500, type: "PN", nom: "PN 1" },
+        { pk: 3150, type: "SIGNAL", nom: "A (panneau circulaire)" },
+        { pk: 3060, type: "INFO", nom: "TIV pointe 60" },
+        { pk: 2050, type: "SIGNAL", nom: "Nf 178" },
+        { pk: 700, type: "SIGNAL", nom: "Nf164 (pk 163,1)", _custom: true },
+        { pk: 0, type: "GARE", nom: "SPA", _custom: true },
+      ];
+
+      // ============================================================
+      // LIGNE 3 : ALV_PBM — Albertville → Pomblière
+      // PK locaux 23,625 → 57,229 (direction IMPAIR, PK croissant)
+      // Source: Image 2 (ALV/PBM)
+      // Vitesses: HLP/ME100: 80 jusqu'à AIG (49,473) puis 70 / MA100: 70 tout le long
+      // ============================================================
+      let dataALV_PBM = [
+        { pk: 23400, type: "GARE", nom: "ALBERTVILLE" },
+        { pk: 23950, type: "SIGNAL", nom: "Nf Cv 36 // Nf Cv 38 — ID 1 feu" },
+        { pk: 24150, type: "PN", nom: "PN 23" },
+        { pk: 24250, type: "INFO", nom: "GSM-R Canal 2" },
+        { pk: 24400, type: "SIGNAL", nom: "Nf 22", _custom: true },
+        { pk: 24500, type: "PN", nom: "PN 24" },
+        { pk: 24880, type: "PN", nom: "PN 25" },
+        { pk: 25150, type: "PN", nom: "PN 26" },
+        { pk: 25300, type: "INFO", nom: "⚡ Baissez pantos !!!" },
+        { pk: 25550, type: "INFO", nom: "⬆️ Levez pantos !!!" },
+        { pk: 25600, type: "PN", nom: "PN 27" },
+        { pk: 26280, type: "SIGNAL", nom: "Nf", _custom: true },
+        { pk: 26350, type: "PN", nom: "PN 29" },
+        { pk: 26450, type: "PN", nom: "PN 30" },
+        { pk: 26900, type: "PN", nom: "PN 31" },
+        { pk: 27450, type: "PN", nom: "PN 32" },
+        { pk: 27920, type: "PN", nom: "PN 33" },
+        { pk: 29600, type: "PN", nom: "PN 35" },
+        { pk: 30345, type: "PN", nom: "PN 36" },
+        { pk: 30580, type: "SIGNAL", nom: "A Panneau circulaire" },
+        { pk: 30900, type: "PN", nom: "PN 37" },
+        { pk: 31850, type: "SIGNAL", nom: "Nf 511", _custom: true },
+        { pk: 31950, type: "PN", nom: "PN 38" },
+        { pk: 32750, type: "GARE", nom: "LA BATHIE (LHI)" },
+        { pk: 33000, type: "SIGNAL", nom: "Nf 525 / Nf 523" },
+        { pk: 33100, type: "PN", nom: "PN 39" },
+        { pk: 33467, type: "PN", nom: "PN 40" },
+        { pk: 34850, type: "SIGNAL", nom: "A Panneau circulaire" },
+        { pk: 34950, type: "PN", nom: "PN 41" },
+        { pk: 35850, type: "SIGNAL", nom: "Nf 531" },
+        { pk: 36700, type: "GARE", nom: "CEVINS (CEI)" },
+        { pk: 36880, type: "SIGNAL", nom: "Nf 545", _custom: true },
+        {
+          pk: 37000,
+          type: "TUNNEL_DEB",
+          nom: "Souterrain de Cevins",
+          _custom: true,
+        },
+        { pk: 37150, type: "TUNNEL_FIN", nom: "Souterrain de Cevins" },
+        { pk: 37280, type: "PN", nom: "PN 42" },
+        { pk: 39650, type: "PN", nom: "PN 45" },
+        { pk: 39700, type: "TUNNEL_DEB", nom: "Souterrain des Côtes" },
+        { pk: 40010, type: "TUNNEL_FIN", nom: "Souterrain des Côtes" },
+        { pk: 40220, type: "PN", nom: "PN 46" },
+        {
+          pk: 41700,
+          type: "SIGNAL",
+          nom: "A (panneau circulaire)",
+          _custom: true,
+        },
+        { pk: 42655, type: "SIGNAL", nom: "Nf 551" },
+        { pk: 43550, type: "GARE", nom: "NOTRE-DAME-DE-BRIANÇON (NAB)" },
+        { pk: 43600, type: "SIGNAL", nom: "V.ev Nf 565 // Nf 563" },
+        { pk: 43700, type: "PN", nom: "PN 48" },
+        {
+          pk: 44260,
+          type: "TUNNEL_DEB",
+          nom: "Souterrain du champs du Comte",
+          _custom: true,
+        },
+        { pk: 44832, type: "TUNNEL_FIN", nom: "Souterrain du champs du Comte" },
+        { pk: 46000, type: "PN", nom: "PN 51" },
+        { pk: 46150, type: "GARE", nom: "PETIT-CŒUR / LA LÈCHÈRE" },
+        { pk: 46300, type: "INFO", nom: "Ep Bozel" },
+        { pk: 47600, type: "PN", nom: "PN 52" },
+        {
+          pk: 47800,
+          type: "SIGNAL",
+          nom: "A panneau circulaire",
+          _custom: true,
+        },
+        { pk: 48100, type: "INFO", nom: "⚡ COUPEZ COURANT !!!" },
+        { pk: 48800, type: "SIGNAL", nom: "Nf 581", _custom: true },
+        { pk: 49250, type: "GARE", nom: "AIGUEBLANCHE (AIG)" },
+        { pk: 49450, type: "SIGNAL", nom: "V.ev Nf 595 // Nf 593" },
+        { pk: 49800, type: "TUNNEL_DEB", nom: "Souterrain des Esserts" },
+        { pk: 50900, type: "SIGNAL", nom: "Nf 611" },
+        { pk: 51200, type: "TUNNEL_FIN", nom: "Souterrain des Esserts" },
+        { pk: 51500, type: "GARE", nom: "MOÛTIERS-SALINS BRIDES (MOS)" },
+        {
+          pk: 51690,
+          type: "SIGNAL",
+          nom: "A Nf 661 / B Nf 659 / C Nf 657 / D Nf 655 / E Nf 653",
+        },
+        { pk: 51800, type: "PN", nom: "PN 54" },
+        { pk: 52200, type: "TUNNEL_DEB", nom: "Souterrain des Cordeliers I" },
+        { pk: 52400, type: "TUNNEL_FIN", nom: "Cordeliers I" },
+        { pk: 52400, type: "SIGNAL", nom: "GA 669" },
+        { pk: 52700, type: "TUNNEL_DEB", nom: "Souterrain de la Boucle" },
+        {
+          pk: 53850,
+          type: "TUNNEL_FIN",
+          nom: "Souterrain de la Boucle",
+          _custom: true,
+        },
+        {
+          pk: 54110,
+          type: "TUNNEL_DEB",
+          nom: "Souterrain des Cordeliers II",
+          _custom: true,
+        },
+        { pk: 54354, type: "TUNNEL_FIN", nom: "Cordeliers II" },
+        { pk: 54700, type: "TUNNEL_DEB", nom: "Souterrain de la Saucette" },
+        { pk: 55400, type: "TUNNEL_FIN", nom: "Saucette" },
+        {
+          pk: 55700,
+          type: "SIGNAL",
+          nom: "A panneau circulaire",
+          _custom: true,
+        },
+        { pk: 55900, type: "TUNNEL_DEB", nom: "Souterrain de PBM" },
+        { pk: 56065, type: "TUNNEL_FIN", nom: "Souterrain de PBM" },
+        { pk: 56800, type: "SIGNAL", nom: "Nf 711" },
+        { pk: 57100, type: "PN", nom: "PN 57" },
+        { pk: 57229, type: "GARE", nom: "POMBLIÈRE-ST-MARCEL" },
+        { pk: 57600, type: "SIGNAL", nom: "V.ev Nf 725 // Nf 723" },
+      ];
+
+      // ============================================================
+      // LIGNE 4 : PBM_ALV — Pomblière → Albertville
+      // PK locaux 57,229 → 23,625 (direction PAIR, PK décroissant)
+      // Source: Image 1 (PBM/ALV)
+      // Vitesses: HLP/ME100: 70 de PBM à MOS (51,6) puis 80 jusqu'à ALV
+      //           MA100: 70 tout le long
+      // ============================================================
+      let dataPBM_ALV = [
+        { pk: 57300, type: "GARE", nom: "POMBLIÈRE-ST-MARCEL" },
+        { pk: 57130, type: "SIGNAL", nom: "Nf 712 // V.ev Nf 714" },
+        { pk: 57030, type: "PN", nom: "PN 57" },
+        { pk: 56800, type: "INFO", nom: "GSM-R Canal 2" },
+        {
+          pk: 56200,
+          type: "TUNNEL_FIN",
+          nom: "Souterrain de PBM",
+          _custom: true,
+        },
+        {
+          pk: 56000,
+          type: "TUNNEL_DEB",
+          nom: "Souterrain de PBM",
+          _custom: true,
+        },
+        {
+          pk: 55170,
+          type: "TUNNEL_FIN",
+          nom: "Souterrain de la Saucette",
+          _custom: true,
+        },
+        {
+          pk: 54500,
+          type: "TUNNEL_DEB",
+          nom: "Souterrain de la Saucette",
+          _custom: true,
+        },
+        {
+          pk: 54350,
+          type: "TUNNEL_FIN",
+          nom: "Souterrain des Cordeliers II",
+          _custom: true,
+        },
+        {
+          pk: 54110,
+          type: "TUNNEL_DEB",
+          nom: "Souterrain des Cordeliers II",
+          _custom: true,
+        },
+        {
+          pk: 54000,
+          type: "SIGNAL",
+          nom: "A (Panneau circulaire)",
+          _custom: true,
+        },
+        {
+          pk: 53900,
+          type: "TUNNEL_FIN",
+          nom: "Souterrain de la Boucle",
+          _custom: true,
+        },
+        { pk: 52600, type: "SIGNAL", nom: "Nf 666" },
+        {
+          pk: 52450,
+          type: "TUNNEL_DEB",
+          nom: "Souterrain de la Boucle",
+          _custom: true,
+        },
+        {
+          pk: 52300,
+          type: "TUNNEL_FIN",
+          nom: "Souterrain des Cordeliers I",
+          _custom: true,
+        },
+        {
+          pk: 52100,
+          type: "TUNNEL_DEB",
+          nom: "Souterrain des Cordeliers I",
+          _custom: true,
+        },
+        { pk: 51750, type: "PN", nom: "PN 54" },
+        { pk: 51600, type: "GARE", nom: "MOÛTIERS-SALINS BRIDES (MOS)" },
+        {
+          pk: 51250,
+          type: "SIGNAL",
+          nom: "E Nf 612 / D Nf 614 / C Nf 616 / B Nf 618 / A Nf 620",
+        },
+        {
+          pk: 51050,
+          type: "TUNNEL_FIN",
+          nom: "Souterrain des Esserts",
+          _custom: true,
+        },
+        { pk: 50100, type: "SIGNAL", nom: "Nf 596" },
+        {
+          pk: 49700,
+          type: "TUNNEL_DEB",
+          nom: "Souterrain des Esserts",
+          _custom: true,
+        },
+        { pk: 49400, type: "GARE", nom: "AIGUEBLANCHE (AIG)" },
+        { pk: 49000, type: "SIGNAL", nom: "Nf 582 // V.ev Nf 584" },
+        { pk: 48200, type: "INFO", nom: "⚡ COUPEZ COURANT !!!" },
+        { pk: 47600, type: "PN", nom: "PN 52" },
+        { pk: 46250, type: "INFO", nom: "Ep Bozel" },
+        { pk: 46100, type: "GARE", nom: "PETIT-CŒUR / LA LÈCHÈRE" },
+        { pk: 45950, type: "PN", nom: "PN 51" },
+        { pk: 45400, type: "SIGNAL", nom: "A Panneau circulaire" },
+        {
+          pk: 44760,
+          type: "TUNNEL_FIN",
+          nom: "Souterrain du champs du Comte",
+          _custom: true,
+        },
+        { pk: 44300, type: "TUNNEL_DEB", nom: "Souterrain du champs du Comte" },
+        {
+          pk: 44250,
+          type: "TUNNEL_DEB",
+          nom: "Souterrain du champs du Comte",
+          _custom: true,
+        },
+        { pk: 44120, type: "SIGNAL", nom: "Nf 566" },
+        { pk: 43700, type: "PN", nom: "PN 48" },
+        { pk: 43550, type: "GARE", nom: "NOTRE-DAME-DE-BRIANÇON (NAB)" },
+        { pk: 43230, type: "SIGNAL", nom: "Nf 552 // V.ev Nf 554" },
+        { pk: 40200, type: "PN", nom: "PN 46" },
+        {
+          pk: 40110,
+          type: "TUNNEL_FIN",
+          nom: "Souterrain des Côtes",
+          _custom: true,
+        },
+        {
+          pk: 39800,
+          type: "TUNNEL_DEB",
+          nom: "Souterrain des Côtes",
+          _custom: true,
+        },
+        { pk: 39650, type: "PN", nom: "PN 45" },
+        { pk: 38850, type: "SIGNAL", nom: "A Panneau circulaire" },
+        { pk: 37300, type: "SIGNAL", nom: "Nf 546" },
+        { pk: 37200, type: "PN", nom: "PN 42" },
+        {
+          pk: 37100,
+          type: "TUNNEL_FIN",
+          nom: "Souterrain de Cevins",
+          _custom: true,
+        },
+        { pk: 37000, type: "TUNNEL_DEB", nom: "Souterrain de Cevins" },
+        { pk: 36750, type: "GARE", nom: "CEVINS (CEI)" },
+        { pk: 36420, type: "SIGNAL", nom: "Nf 532 // V.ev Nf 534" },
+        { pk: 34900, type: "PN", nom: "PN 41" },
+        { pk: 34550, type: "SIGNAL", nom: "A Panneau circulaire" },
+        { pk: 34500, type: "TUNNEL_DEB", nom: "Galerie d'Arbine" },
+        { pk: 33450, type: "PN", nom: "PN 40" },
+        { pk: 33150, type: "SIGNAL", nom: "Nf 526" },
+        { pk: 33080, type: "PN", nom: "PN 39" },
+        { pk: 32800, type: "GARE", nom: "LA BATHIE (LHI)" },
+        { pk: 32480, type: "SIGNAL", nom: "V.ev Nf 512 // Nf 514" },
+        { pk: 31900, type: "PN", nom: "PN 38" },
+        { pk: 30900, type: "PN", nom: "PN 37" },
+        { pk: 30400, type: "PN", nom: "PN 36" },
+        { pk: 29600, type: "PN", nom: "PN 35" },
+        { pk: 28000, type: "PN", nom: "PN 33" },
+        { pk: 27900, type: "SIGNAL", nom: "A panneau circulaire" },
+        { pk: 27450, type: "PN", nom: "PN 32" },
+        { pk: 27100, type: "INFO", nom: "TIV POINTE 90" },
+        { pk: 26950, type: "PN", nom: "PN 31" },
+        { pk: 26600, type: "SIGNAL", nom: "Nf 9" },
+        { pk: 26500, type: "PN", nom: "PN 30" },
+        { pk: 26350, type: "PN", nom: "PN 29" },
+        {
+          pk: 25900,
+          type: "INFO",
+          nom: "⬇️ Baissez pantos !!! Pancarte Z repère",
+        },
+        { pk: 25600, type: "PN", nom: "PN 27" },
+        { pk: 25100, type: "PN", nom: "PN 26" },
+        { pk: 24900, type: "PN", nom: "PN 25" },
+        { pk: 24550, type: "SIGNAL", nom: "Nf 11" },
+        { pk: 24490, type: "PN", nom: "PN 24" },
+        { pk: 24300, type: "INFO", nom: "GSM-R Canal 1" },
+        { pk: 24150, type: "PN", nom: "PN 23" },
+        { pk: 23600, type: "GARE", nom: "ALBERTVILLE" },
+        { pk: 23400, type: "INFO", nom: "Attention fin Voie 3 Nf Cv 67" },
+      ];
+
+      // ============================================================
+      // EXPORT index.html AVEC CORRECTIONS INTÉGRÉES
+      // ============================================================
+      window.exportHTML = function () {
+        var lines = [
+          "CHAMBERY_MODANE",
+          "MODANE_CHAMBERY",
+          "CHAMBERY_AMBERIEU",
+          "AMBERIEU_CHAMBERY",
+          "SPA_ALV",
+          "ALV_PBM",
+          "PBM_ALV",
+          "ALV_SPA",
+        ];
+        var dataNames = {
+          CHAMBERY_MODANE: "dataImpairBase",
+          MODANE_CHAMBERY: "dataPairBase",
+          CHAMBERY_AMBERIEU: "dataChamberyAmberieuPair",
+          AMBERIEU_CHAMBERY: "dataChamberyAmberieuImpair",
+          SPA_ALV: "dataSPA_ALV",
+          ALV_PBM: "dataALV_PBM",
+          PBM_ALV: "dataPBM_ALV",
+          ALV_SPA: "dataALV_SPA",
+        };
+
+        // Construire le bloc de patch JS pour toutes les lignes
+        var patchLines = [];
+        lines.forEach(function (line) {
+          var edits = loadEditsFromLS(line);
+          if (
+            !edits.added.length &&
+            !edits.deleted.length &&
+            !edits.modified.length
+          )
+            return;
+          var dn = dataNames[line];
+          if (!dn) return;
+          var p = [];
+          p.push("(function(){");
+          // suppressions
+          edits.deleted.forEach(function (key) {
+            p.push(
+              "  " +
+                dn +
+                "=" +
+                dn +
+                '.filter(function(i){return (i.pk+"|"+i.type+"|"+i.nom)!==' +
+                JSON.stringify(key) +
+                ";});",
+            );
+          });
+          // modifications
+          edits.modified.forEach(function (m) {
+            p.push(
+              "  " +
+                dn +
+                "=" +
+                dn +
+                '.map(function(i){if((i.pk+"|"+i.type+"|"+i.nom)===' +
+                JSON.stringify(m.origKey) +
+                "){i.pk=" +
+                m.pk +
+                ";i.nom=" +
+                JSON.stringify(m.nom) +
+                ";}return i;});",
+            );
+          });
+          // ajouts
+          edits.added.forEach(function (a) {
+            p.push(
+              "  " +
+                dn +
+                ".push({pk:" +
+                a.pk +
+                ",type:" +
+                JSON.stringify(a.type) +
+                ",nom:" +
+                JSON.stringify(a.nom) +
+                ",_custom:true});",
+            );
+          });
+          p.push("})();");
+          patchLines.push(p.join("\n"));
+        });
+
+        if (patchLines.length === 0) {
+          alert("Aucune correction à exporter.");
+          return;
+        }
+
+        // Récupérer le HTML source et injecter le patch avant la fermeture du script
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", window.location.href, false); // synchrone
+        xhr.send();
+        var html = xhr.responseText;
+
+        var patchCode =
+          "\n// === CORRECTIONS EXPORTEES ===\n" +
+          patchLines.join("\n") +
+          "\n// === FIN CORRECTIONS ===\n";
+        // Injecter avant la dernière balise fermante script (en évitant le mot interdit)
+        var closeTag = "<" + "/script>";
+        var lastClose = html.lastIndexOf(closeTag);
+        html =
+          html.substring(0, lastClose) + patchCode + html.substring(lastClose);
+
+        var blob = new Blob([html], { type: "text/html" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "index.html";
+        a.click();
+        URL.revokeObjectURL(a.href);
+        window.closeModal("config");
+      };
+
+      // ============================================================
+      // BACKUP / RESTORE localStorage en JSON
+      // ============================================================
+      window.backupLS = function () {
+        var lines = [
+          "CHAMBERY_MODANE",
+          "MODANE_CHAMBERY",
+          "CHAMBERY_AMBERIEU",
+          "AMBERIEU_CHAMBERY",
+          "SPA_ALV",
+          "ALV_PBM",
+          "PBM_ALV",
+          "ALV_SPA",
+        ];
+        var backup = {};
+        lines.forEach(function (line) {
+          var edits = loadEditsFromLS(line);
+          if (
+            edits.added.length ||
+            edits.deleted.length ||
+            edits.modified.length
+          ) {
+            backup[line] = edits;
+          }
+        });
+        if (Object.keys(backup).length === 0) {
+          alert("Aucune correction à sauvegarder.");
+          return;
+        }
+        var blob = new Blob([JSON.stringify(backup, null, 2)], {
+          type: "application/json",
+        });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "fiche_train_corrections.json";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+
+      window.restoreLS = function (input) {
+        var file = input.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            var backup = JSON.parse(e.target.result);
+            var count = 0;
+            Object.keys(backup).forEach(function (line) {
+              localStorage.setItem(lsKey(line), JSON.stringify(backup[line]));
+              count++;
+            });
+            alert(
+              "Corrections restaurées pour " +
+                count +
+                " ligne(s). Rechargement...",
+            );
+            location.reload();
+          } catch (err) {
+            alert("Erreur lors de la restauration : " + err.message);
+          }
+        };
+        reader.readAsText(file);
+        input.value = "";
+      };
+    </script>
+  </body>
+</html>
