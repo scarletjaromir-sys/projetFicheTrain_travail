@@ -1635,6 +1635,7 @@
       let wakeLock = null;
       async function keepAwake() {
         try {
+          if (wakeLock !== null) return; // déjà actif, rien à faire
           if ("wakeLock" in navigator) {
             wakeLock = await navigator.wakeLock.request("screen");
             wakeLock.addEventListener("release", function () {
@@ -1645,6 +1646,10 @@
           console.warn("WakeLock indisponible", e);
         }
       }
+      // iOS n'accorde souvent le wake lock qu'en réponse à un GESTE utilisateur.
+      // On (re)tente donc à chaque interaction tant qu'il n'est pas actif.
+      document.addEventListener("touchend", keepAwake, { passive: true });
+      document.addEventListener("click", keepAwake);
       // Réactive le verrou quand on revient sur l'app (iOS le relâche en arrière-plan)
       document.addEventListener("visibilitychange", function () {
         if (wakeLock === null && document.visibilityState === "visible") {
@@ -2834,68 +2839,61 @@
         }
       }
 
+      // Surveillance de perte de signal : si aucun point GPS fiable n'arrive
+      // pendant GPS_WATCHDOG_MS, on bascule en mode tunnel quasi immédiatement.
+      let gpsWatchdog = null;
+      const GPS_WATCHDOG_MS = 1500; // baisser = tunnel plus rapide (mais risque de clignotement)
+
+      function armGpsWatchdog() {
+        if (gpsWatchdog) clearTimeout(gpsWatchdog);
+        gpsWatchdog = setTimeout(function () {
+          if (!isGpsLost) enterTunnelMode();
+        }, GPS_WATCHDOG_MS);
+      }
+
       function initGPS() {
         if (navigator.geolocation) {
           navigator.geolocation.watchPosition(onGpsSuccess, onGpsError, {
             enableHighAccuracy: true,
             maximumAge: 0,
-            timeout: 5000,
+            timeout: 2000,
           });
+          armGpsWatchdog(); // démarre la surveillance dès le lancement
         }
       }
 
       function onGpsSuccess(pos) {
-        // Ignore les positions trop imprécises (falaises, caténaire, tunnels partiels)
-        // qui font sauter la vitesse n'importe comment. 50 m = seuil raisonnable.
+        // Ignore les positions trop imprécises (falaises, caténaire, tunnels partiels).
+        // Un fix ignoré ne réarme PAS le watchdog → le tunnel se déclenchera si ça persiste.
         if (pos.coords.accuracy && pos.coords.accuracy > 50) return;
+
+        // Un point GPS FIABLE est arrivé → on réarme la surveillance de perte de signal.
+        lastValidSpeedTime = Date.now();
+        armGpsWatchdog();
 
         let speed = pos.coords.speed;
         if (speed === null || speed < 0) speed = 0;
 
-        // Vitesse valide (> 5 km/h) : sortie de tunnel ou mode normal
-        if (speed >= 1.4) {
-          lastValidSpeedTime = Date.now();
-          if (gpsLostTimer) {
-            clearTimeout(gpsLostTimer);
-            gpsLostTimer = null;
-          }
-          if (isGpsLost) {
-            exitTunnelMode(speed);
-            return;
-          }
-          currentSpeedMs = speed;
-          lastKnownSpeedMs = speed;
-          if (isGpsActive && !isPaused) {
-            document.getElementById("gpsStatus").className = "status-pill ok";
-            document.getElementById("gpsStatus").innerText = "GPS ON";
-          }
+        // Signal fiable retrouvé : on sort du mode tunnel MÊME à l'arrêt (vitesse 0).
+        // (corrige le cas où les boutons +/- restaient affichés en GPS ON)
+        if (isGpsLost) {
+          exitTunnelMode(speed);
           return;
         }
 
-        // Vitesse nulle ou quasi-nulle
-        if (isGpsLost) return; // déjà en mode tunnel, on ne touche à rien
-
-        // Si on roulait et que la vitesse est tombée à 0 :
-        // on attend 3 secondes sans vitesse valide avant de passer en mode tunnel
-        // (évite le faux positif à l'arrêt en gare)
-        if (lastKnownSpeedMs > 1.4) {
-          if (!gpsLostTimer) {
-            gpsLostTimer = setTimeout(function () {
-              // 3 secondes sans vitesse valide → mode tunnel
-              if (!isGpsLost) enterTunnelMode();
-            }, 3000);
-          }
+        currentSpeedMs = speed;
+        lastKnownSpeedMs = speed;
+        if (isGpsActive && !isPaused) {
+          document.getElementById("gpsStatus").className = "status-pill ok";
+          document.getElementById("gpsStatus").innerText = "GPS ON";
         }
       }
 
       function onGpsError(err) {
         document.getElementById("gpsStatus").className = "status-pill waiting";
         document.getElementById("gpsStatus").innerText = "SIGNAL...";
-        if (!gpsLostTimer && !isGpsLost) {
-          gpsLostTimer = setTimeout(function () {
-            enterTunnelMode();
-          }, 1000);
-        }
+        // Erreur GPS (souvent un timeout en tunnel) → tunnel tout de suite.
+        if (!isGpsLost) enterTunnelMode();
       }
 
       window.gpsAdjSpeed = function (deltaKmh) {
@@ -4341,6 +4339,27 @@
         reader.readAsText(file);
         input.value = "";
       };
-    </script>
+    
+// === CORRECTIONS EXPORTEES ===
+(function(){
+  dataChamberyAmberieuImpair=dataChamberyAmberieuImpair.filter(function(i){return (i.pk+"|"+i.type+"|"+i.nom)!=="86400|TUNNEL_DEB|Tunnel de Pugieu";});
+  dataChamberyAmberieuImpair=dataChamberyAmberieuImpair.filter(function(i){return (i.pk+"|"+i.type+"|"+i.nom)!=="87200|TUNNEL_FIN|Tunnel de Pugieu";});
+  dataChamberyAmberieuImpair=dataChamberyAmberieuImpair.filter(function(i){return (i.pk+"|"+i.type+"|"+i.nom)!=="87200|TUNNEL_DEB|Tunnel de Pugieu";});
+  dataChamberyAmberieuImpair=dataChamberyAmberieuImpair.filter(function(i){return (i.pk+"|"+i.type+"|"+i.nom)!=="86400|TUNNEL_FIN|Pugieu";});
+  dataChamberyAmberieuImpair=dataChamberyAmberieuImpair.filter(function(i){return (i.pk+"|"+i.type+"|"+i.nom)!=="113500|TUNNEL_DEB|Tunnel de Brison";});
+  dataChamberyAmberieuImpair=dataChamberyAmberieuImpair.filter(function(i){return (i.pk+"|"+i.type+"|"+i.nom)!=="113900|TUNNEL_FIN|Tunnel de Brison";});
+  dataChamberyAmberieuImpair=dataChamberyAmberieuImpair.filter(function(i){return (i.pk+"|"+i.type+"|"+i.nom)!=="113900|TUNNEL_DEB|Tunnel de Brison";});
+  dataChamberyAmberieuImpair=dataChamberyAmberieuImpair.filter(function(i){return (i.pk+"|"+i.type+"|"+i.nom)!=="113500|TUNNEL_FIN|Brison";});
+  dataChamberyAmberieuImpair=dataChamberyAmberieuImpair.map(function(i){if((i.pk+"|"+i.type+"|"+i.nom)==="116400|VITESSE|80"){i.pk=116500;i.nom="80";}return i;});
+  dataChamberyAmberieuImpair=dataChamberyAmberieuImpair.map(function(i){if((i.pk+"|"+i.type+"|"+i.nom)==="116500|VITESSE|80"){i.pk=116500;i.nom="80";}return i;});
+  dataChamberyAmberieuImpair=dataChamberyAmberieuImpair.map(function(i){if((i.pk+"|"+i.type+"|"+i.nom)==="116300|TUNNEL_FIN|Colombière"){i.pk=116400;i.nom="Colombière";}return i;});
+  dataChamberyAmberieuImpair=dataChamberyAmberieuImpair.map(function(i){if((i.pk+"|"+i.type+"|"+i.nom)==="116400|TUNNEL_FIN|Colombière"){i.pk=116400;i.nom="Colombière";}return i;});
+  dataChamberyAmberieuImpair.push({pk:86600,type:"TUNNEL_DEB",nom:"Tunnel de pugieu",_custom:true});
+  dataChamberyAmberieuImpair.push({pk:87200,type:"TUNNEL_FIN",nom:"Tunnel de pugieu",_custom:true});
+  dataChamberyAmberieuImpair.push({pk:113500,type:"TUNNEL_DEB",nom:"Tunnel de Brisson",_custom:true});
+  dataChamberyAmberieuImpair.push({pk:113900,type:"TUNNEL_FIN",nom:"Tunne de Brison",_custom:true});
+})();
+// === FIN CORRECTIONS ===
+</script>
   </body>
 </html>
